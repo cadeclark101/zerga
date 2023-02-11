@@ -13,6 +13,8 @@ class Player(object):
 
         self.active_units = []
 
+        self.selected_building = None
+
     def claimResource(self, resource):
         self.claimed_blue_resource_node.append(resource)
         if resource.resource_type == 1:
