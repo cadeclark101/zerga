@@ -23,6 +23,7 @@ class MainRun(object):
 
         self.menu_sprites = pygame.sprite.Group()
         self.resource_sprites = pygame.sprite.Group()
+        self.building_sprites = pygame.sprite.Group()
 
         self.font = pygame.font.SysFont("verdana", 32)
         
@@ -66,12 +67,28 @@ class MainRun(object):
                     click = pygame.mouse.get_pressed()
                     mouse_pos = pygame.mouse.get_pos()
 
-                    if click == (True, False, False):
-                        for i in self.menu_sprites:
-                            if i.rect.collidepoint(mouse_pos):
-                                print("menu button")
+                    if click == (True, False, False): # Select building menu button
+                        for menu_sprite in self.menu_sprites:
+                            if menu_sprite.rect.collidepoint(mouse_pos):
+                                self.player.selected_menu_button = menu_sprite
+                                print(self.player.selected_menu_button)
                                 break
 
+                        for resource_node in self.resource_sprites:
+                            if resource_node.rect.collidepoint(mouse_pos):
+                                if self.player.selected_menu_button is not None:
+                                    if resource_node.resource_type == 1:
+                                        new_building = GreenBuilding(10, 10, resource_node, self.window_object)
+                                        self.building_sprites.add(new_building)
+                                    else: 
+                                        print("create blue building")
+                                else:
+                                    print("no building selected")
+                                break
+
+                    elif click == (False, False, True): # Clear cursor on right click from menu selection
+                        self.player.selected_menu_button = None
+                        print("cleared cursor")
 
             if len(self.resource_sprites) == 0:
                 self.drawResourceNodes(25)

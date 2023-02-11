@@ -13,7 +13,7 @@ class MenuButton(pygame.sprite.Sprite):
 
 
     def isClicked(self):
-        return pygame.mouse.get_pressed()[0] and self.rect.collidepoint(pygame.mouse.get_pos()) 
+        print("clicked")
     
 
     

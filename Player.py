@@ -13,13 +13,7 @@ class Player(object):
 
         self.active_units = []
 
-        self.selected_building = None
+        self.selected_menu_button = None
 
-    def claimResource(self, resource):
-        self.claimed_blue_resource_node.append(resource)
-        if resource.resource_type == 1:
-            self.green_resource_income += 10
-        else:
-            self.blue_resource += 5
 
     
