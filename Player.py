@@ -11,6 +11,8 @@ class Player(object):
         self.active_units = []
 
         self.selected_menu_button = None
+        self.selected_building = None
+        self.selected_troop_group = None
 
     def incomeTicker(self):
         self.green_resource += self.green_resource_income
