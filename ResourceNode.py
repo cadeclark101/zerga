@@ -18,6 +18,4 @@ class ResourceNode(pygame.sprite.Sprite):
         else:
             pygame.draw.rect(surface, (0, 0, 128), self.rect) # BLUE
         
-    def isClicked(self):
-        return pygame.mouse.get_pressed()[0] and self.rect.collidepoint(pygame.mouse.get_pos()) 
 

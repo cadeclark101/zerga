@@ -8,12 +8,19 @@ class Player(object):
         self.green_resource_income = green_resource_income
         self.blue_resource_income = blue_resource_income
 
-        self.claimed_green_resource_node = []
-        self.claimed_blue_resource_node = []
-
         self.active_units = []
 
         self.selected_menu_button = None
+
+    def incomeTicker(self):
+        self.green_resource += self.green_resource_income
+        self.blue_resource += self.blue_resource_income
+
+    def increaseResourceIncome(self, resource, amount):
+        if resource == 1:
+            self.green_resource_income += amount
+        else:
+            self.blue_resource_income += amount
 
 
     
