@@ -27,6 +27,8 @@ class MainRun(object):
         self.resource_sprites = pygame.sprite.Group()
         self.building_sprites = pygame.sprite.Group()
 
+        self.building_menu_container_rect = pygame.Rect(1890, 0, 30, 120)
+
         self.font = pygame.font.SysFont("verdana", 32)
         
         self.Main()
@@ -37,7 +39,19 @@ class MainRun(object):
             resource_obj = ResourceNode(self.window_width, self.window_height, 5, 5, self.window_object)
             self.resource_sprites.add(resource_obj)
 
-        
+
+
+    def drawMenuSprites(self):
+        menu_container = pygame.draw.rect(self.window_object, (100, 123, 255), self.building_menu_container_rect)
+        for sprite in self.menu_sprites:
+            pygame.draw.rect(self.window_object, sprite.colour, (sprite.x, sprite.y, sprite.w, sprite.h))
+
+
+
+    def drawBuildingSprites(self):
+        for sprite in self.building_sprites:
+            pygame.draw.rect(self.window_object, sprite.colour, (sprite.x, sprite.y, sprite.w, sprite.h))
+
 
     def drawOverlay(self):
         green_resource_text = self.font.render(str(self.player.green_resource), True, (0, 255, 0), None)
@@ -47,41 +61,61 @@ class MainRun(object):
         self.window_object.blit(green_resource_text, (0,0)) 
         self.window_object.blit(blue_resource_text, (0,35)) 
 
+
+
     def incomeTicker(self):
         self.player.incomeTicker()
 
 
     def buildingMenu(self):
-        menu_container_rect = pygame.Rect(1890, 0, 30, 120)
-        self.menu_container = pygame.draw.rect(self.window_object, (100, 123, 255), menu_container_rect)
-        
-        blue_building_button_obj = MenuButton(1890, 0, 30, 30, self.window_object, 1)
+        blue_building_button_obj = MenuButton(1890, 0, 30, 30, 1, (0, 0, 0))
         self.menu_sprites.add(blue_building_button_obj)
 
-        green_building_button_obj = MenuButton(1890, 50, 30, 30, self.window_object, 2)
+        green_building_button_obj = MenuButton(1890, 50, 30, 30, 2, (0, 0, 0))
         self.menu_sprites.add(green_building_button_obj)
 
-        main_building_button_obj = MenuButton(1890, 100, 30, 30, self.window_object, 3)
+        main_building_button_obj = MenuButton(1890, 100, 30, 30, 3, (0, 0, 0))
         self.menu_sprites.add(main_building_button_obj)
-
+        pass
+        
 
 
 
     def handleClickEvent(self, mouse_pos, click):
 
         # PLACE RESOURCE BUILDING FUNCTION
-        def placeResourceBuilding(button_id, resource_type):
+        def placeBuilding(button_id, resource_type):
             if button_id == resource_type: # Check clicked resource type is same as button id (green = 1, blue = 2)
                 if resource_type == 1: # Check for green resource clicked
-                    new_building = GreenBuilding(10, 10, 500, resource_node, self.window_object) # Place green resource building
-                    self.player.increaseResourceIncome(resource_type, 1)
+                    new_building = GreenBuilding(10, 10, 500, (0, 255, 0), resource_node) # Place green resource building
                 elif resource_type == 2:
-                    new_building = BlueBuilding(10, 10, 500, resource_node, self.window_object) # Place blue resource building
-                    self.player.increaseResourceIncome(resource_type, 1)
+                    new_building = BlueBuilding(10, 10, 500, (0, 0, 128), resource_node) # Place blue resource building
+                self.player.increaseResourceIncome(resource_type, 1)    
                 self.building_sprites.add(new_building)
+                self.drawBuildingSprites()
+                self.drawMenuSprites()
+
+            # CREATE NEW MAIN BUILDING TYPE
+            elif button_id == 3:
+                new_building = MainBuilding(mouse_pos[0], mouse_pos[1], 50, 50, 1000, (123, 123, 123))
+                if checkForCollision(new_building.rect) == True:
+                    print("collides")
+                else:
+                    self.building_sprites.add(new_building)
+                    self.drawBuildingSprites()
+                    self.drawMenuSprites()
             else:
                 pass
-
+        
+        # Function that checks if new building will collide with anything else
+        def checkForCollision(new_building_rect):
+            collides = False
+            if new_building_rect.colliderect(self.building_menu_container_rect): # Check if building will collide with menu
+                collides = True
+            for resource_sprite in self.resource_sprites: # Check if new building will collide with any resource nodes
+                if new_building_rect.colliderect(resource_sprite.rect):
+                    collides = True 
+            return collides
 
         # CHECK FOR LEFT CLICK
         if click == (True, False, False): 
@@ -89,38 +123,37 @@ class MainRun(object):
             for menu_sprite in self.menu_sprites:
                 if menu_sprite.rect.collidepoint(mouse_pos):
                     self.player.selected_menu_button = menu_sprite # Set selected menu button
-                    print(self.player.selected_menu_button.getButtonID())
                     break
+                else:
+                    pass
 
-
+        
 
             # CHECK IF RESOURCE NODE IS CLICKED
             for resource_node in self.resource_sprites: 
                 if resource_node.rect.collidepoint(mouse_pos): 
                     if self.player.selected_menu_button is not None: # Check a selected button is not none 
-                        placeResourceBuilding(self.player.selected_menu_button.getButtonID(), resource_node.resource_type)
+                        placeBuilding(self.player.selected_menu_button.getButtonID(), resource_node.resource_type)
                     else:
                         print("no building selected")
-                        break  
-
-
-
-            # CHECK IF DESIRED BUILDING WILL COLLIDE WITH OTHER BUILDINGS OR RESOURCES
+                        break 
+                else:
+                    pass
+            
             if self.player.selected_menu_button is not None:
                 if self.player.selected_menu_button.getButtonID() == 3:
-                    new_building = MainBuilding(mouse_pos[0], mouse_pos[1], 50, 50, 1000, self.window_object)
-                    self.building_sprites.add(new_building)
-            else:
-                pass
+                    placeBuilding(self.player.selected_menu_button.getButtonID(), None)
+
+            #for each menusprite
+                #is the mouse position from current to mouse position + building width less than the 
 
         # CLEAR CURSOR ON RIGHT CLICK             
         elif click == (False, False, True): 
             self.player.selected_menu_button = None
             print("cleared cursor")
 
-                  
         
-
+        
                                     
             
 
@@ -136,15 +169,14 @@ class MainRun(object):
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     click = pygame.mouse.get_pressed()
                     mouse_pos = pygame.mouse.get_pos()
-                    print(mouse_pos)
                     self.handleClickEvent(mouse_pos, click)
  
-
             if len(self.resource_sprites) == 0:
                 self.drawResourceNodes(25)
             else:
                 pass
             
+            self.drawMenuSprites()
             self.drawOverlay()
             self.buildingMenu()
 

@@ -1,11 +1,15 @@
 import pygame
 
 class GreenBuilding(pygame.sprite.Sprite):
-    def __init__(self, w, h, health, resource_node, surface):
+    def __init__(self, w, h, health, colour, resource_node):
         pygame.sprite.Sprite.__init__(self)
         self.health = health
-        
-        self.rect = pygame.Rect(resource_node.x, resource_node.y, w, h)
+        self.colour = colour
+        self.x = resource_node.x
+        self.y = resource_node.y
+        self.w = w
+        self.h = h
 
-        pygame.draw.rect(surface, (0, 255, 0), self.rect)
+        self.rect = pygame.Rect(self.x, self.y, self.w, self.h)
+
         
