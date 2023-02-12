@@ -1,1 +1,7 @@
-Trying out PyGame. 
+Clone the repo, make sure you have pygame installed and then run "zerga.py". 
+
+Right now this game is just bare bones with no graphics. I am mostly just setting up the menu and controls.
+
+Things you can do:
+- Claim resource nodes
+- Place your main building
