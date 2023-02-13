@@ -1,4 +1,6 @@
+import multiprocessing
 from threading import Thread
+import threading
 import numpy as np
 import pygame
 
@@ -30,9 +32,9 @@ class MainRun(object):
         self.resource_sprites = pygame.sprite.Group()
         self.building_sprites = pygame.sprite.Group()
         self.troops_sprites = pygame.sprite.Group()
-        self.moving_sprites = pygame.sprite.Group()
 
-        self.selected_troops_target = None
+        self.troops_moving = False
+        self.mouse_pos = None
 
         self.selected_building_menu_container_rect = pygame.Rect(0, 1040, 1920, 40)
         self.building_menu_container_rect = pygame.Rect(1890, 0, 30, 150)
@@ -41,36 +43,51 @@ class MainRun(object):
         
         self.Main()
 
-    # REDRAW ALL SPRITES
-    def redrawAllSpriteGroups(self):
-        self.window_object.fill((255, 255, 255))
-        self.drawResourceNodes()
+    def redrawAll(self):
+        window_object.fill((255, 255, 255))
         self.drawBuildMenu()
         self.drawBuildingSprites()
+        self.drawOverlay()
         self.drawMainBuildingMenu()
         self.drawTroopSprites()
 
     # DRAW ALL RESOURCE NODE SPRITES
-    def drawResourceNodes(self):
-        pygame.sprite.Group.draw(self.resource_sprites, self.window_object)
+    def drawResourceNodes(self, nResources):
+        for i in range(nResources):
+            resource_obj = ResourceNode(self.window_width, self.window_height, 5, 5, self.window_object)
+            self.resource_sprites.add(resource_obj)
+
 
     # DRAW ALL MENU SPRITES
     def drawBuildMenu(self):
         building_menu_container_rect = pygame.draw.rect(self.window_object, (255, 255, 255), self.building_menu_container_rect)
-        pygame.sprite.Group.draw(self.building_menu_sprites, self.window_object)
+        for sprite in self.building_menu_sprites:
+            pygame.draw.rect(self.window_object, sprite.colour, (sprite.x, sprite.y, sprite.w, sprite.h))
 
 
     # DRAW ALL BUILDING SPRITES
     def drawBuildingSprites(self):
-        pygame.sprite.Group.draw(self.building_sprites, self.window_object)
+        for sprite in self.building_sprites:
+            pygame.draw.rect(self.window_object, sprite.colour, (sprite.x, sprite.y, sprite.w, sprite.h))
+
+    # DRAW INFO OVERLAY
+    def drawOverlay(self):
+        green_resource_text = self.font.render(str(self.player.green_resource), True, (0, 255, 0), None)
+
+        blue_resource_text = self.font.render(str(self.player.green_resource), True, (0, 0, 128), None)
+        
+        self.window_object.blit(green_resource_text, (0,0)) 
+        self.window_object.blit(blue_resource_text, (0,35)) 
 
     # DRAW TROOP MENU FOR MAIN BUILDING
     def drawMainBuildingMenu(self):
         selected_building_menu_container_rect = pygame.draw.rect(self.window_object, (255, 255, 255), self.selected_building_menu_container_rect)
-        pygame.sprite.Group.draw(self.selected_building_menu_sprites, self.window_object)
+        for sprite in self.selected_building_menu_sprites:
+            pygame.draw.rect(self.window_object, sprite.colour, (sprite.x, sprite.y, sprite.w, sprite.h))
 
     def drawTroopSprites(self):
-        pygame.sprite.Group.draw(self.troops_sprites, self.window_object)
+        for sprite in self.troops_sprites:
+            pygame.draw.rect(self.window_object, sprite.colour, (sprite.x, sprite.y, sprite.w, sprite.h))
 
     # CREATE RIGHT SIDE MENU
     def createBuildMenu(self):
@@ -207,31 +224,32 @@ class MainRun(object):
                     if self.player.selected_building is not None: # Spawn troops if building is selected and "a" is pressed
                         if event.key == pygame.K_a:
                             self.spawnTroop()
-                            print("spawned 1 troop")
                 
-                    self.player.selected_troop_group = self.troops_sprites # REMOVE THIS JUST FOR TESTING REMOVE THIS JUST FOR TESTING REMOVE THIS JUST FOR TESTING REMOVE THIS JUST FOR TESTING
+                    self.player.selected_troop_group = self.troops_sprites # REMOVE THIS JUST FOR TESTING
                     if self.player.selected_troop_group == self.troops_sprites:
                         if event.key == pygame.K_SPACE:
-                            self.selected_troops_target = pygame.mouse.get_pos() 
-                            self.moving_sprites.add(self.player.selected_troop_group)
+                            self.mouse_pos = pygame.mouse.get_pos() 
+                            self.troops_moving = True
                     else:
                         pass
- 
-            # CHECK IF ANY THAT ANY SPRITES THAT ARE MOVING EXIST
-            if len(self.moving_sprites) != 0:
-                print("test")
-
-            #  SPAWN X RESOURCE NODES IF NONE EXIST
+            
+            if self.troops_moving == True:
+                for sprite in self.player.selected_troop_group:
+                    Thread(target=sprite.moveToTarget(self.mouse_pos)).start()
+                self.redrawAll()
+                
+            threads = threading.enumerate()
+            for thread in threads:
+                print(thread.name)
+            
             if len(self.resource_sprites) == 0:
-                for i in range(25):
-                    resource_obj = ResourceNode(self.window_width, self.window_height, 5, 5, self.window_object)
-                    self.resource_sprites.add(resource_obj)
-                self.drawResourceNodes() # First draw of nodes
+                self.drawResourceNodes(25)
             else:
                 pass
             
             self.createBuildMenu()
             self.drawBuildMenu()
+            self.drawOverlay()
             self.drawTroopSprites()
             
 

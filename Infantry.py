@@ -10,13 +10,11 @@ class Infantry(pygame.sprite.Sprite):
         self.w = w
         self.h = h
         self.movement_target = None
-        self.image = pygame.Surface((w,h))
 
         self.rect = pygame.Rect(self.x, self.y, self.w, self.h)
 
     def moveToTarget(self, target_pos):
-        print("here")
-        if self.checkReachTarget != True:
+        if self.checkReachedTarget != True:
             if target_pos[0] > self.x:
                 self.x += 1
             elif target_pos[0] < self.x:
@@ -25,9 +23,11 @@ class Infantry(pygame.sprite.Sprite):
                 self.y += 1
             elif target_pos[1] < self.y:
                 self.y -= 1
+            else:
+                pass
 
-    def checkReachTarget(self, target_pos):
-        if self.x == target_pos[0] and self.y == target_pos[1]:
+    def checkReachedTarget(self,target_pos):
+        if target_pos[0] != self.x and target_pos[1] != self.y:
             return True
 
 class InfantryProjectile(pygame.sprite.Sprite):
