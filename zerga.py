@@ -52,11 +52,9 @@ class MainRun(object):
         self.drawTroopSprites()
 
     # DRAW ALL RESOURCE NODE SPRITES
-    def drawResourceNodes(self, nResources):
-        for i in range(nResources):
-            resource_obj = ResourceNode(self.window_width, self.window_height, 5, 5, self.window_object)
-            self.resource_sprites.add(resource_obj)
-
+    def drawResourceNodes(self):
+        for resource_sprite in self.resource_sprites:
+            pygame.draw.rect(self.window_object, resource_sprite.colour, (resource_sprite))
 
     # DRAW ALL MENU SPRITES
     def drawBuildMenu(self):
@@ -85,6 +83,7 @@ class MainRun(object):
         for sprite in self.selected_building_menu_sprites:
             pygame.draw.rect(self.window_object, sprite.colour, (sprite.x, sprite.y, sprite.w, sprite.h))
 
+    # DRAW ALL TROOP SPRITES
     def drawTroopSprites(self):
         for sprite in self.troops_sprites:
             pygame.draw.rect(self.window_object, sprite.colour, (sprite.x, sprite.y, sprite.w, sprite.h))
@@ -107,7 +106,16 @@ class MainRun(object):
         self.selected_building_menu_sprites.add(basic_troop_button_obj)
         pass
 
+    # CREATE RESOURCE NODE OBJECTS
+    def createResourceNodes(self):
+        for i in range(20):
+            green_resource_obj = ResourceNode(1920, 1080, 5, 5, (0, 255, 0))
+            blue_resource_obj = ResourceNode(1920, 1080, 5, 5, (0, 0, 128))
+            self.resource_sprites.add(green_resource_obj)
+            self.resource_sprites.add(blue_resource_obj)
+        self.drawResourceNodes()
 
+    # SPAWN NEW TROOP
     def spawnTroop(self):
         new_troop = Infantry(10, 10, self.player.selected_building.x, self.player.selected_building.y, 5, (0, 0, 0))
         self.troops_sprites.add(new_troop)
@@ -233,19 +241,17 @@ class MainRun(object):
                     else:
                         pass
             
+            # MOVE PLACED TROOPS
             if self.troops_moving == True:
                 for sprite in self.player.selected_troop_group:
                     Thread(target=sprite.moveToTarget(self.mouse_pos)).start()
                 self.redrawAll()
                 
-            threads = threading.enumerate()
-            for thread in threads:
-                print(thread.name)
             
             if len(self.resource_sprites) == 0:
-                self.drawResourceNodes(25)
+                self.createResourceNodes()
             else:
-                pass
+                self.drawResourceNodes()
             
             self.createBuildMenu()
             self.drawBuildMenu()

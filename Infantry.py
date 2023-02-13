@@ -14,21 +14,26 @@ class Infantry(pygame.sprite.Sprite):
         self.rect = pygame.Rect(self.x, self.y, self.w, self.h)
 
     def moveToTarget(self, target_pos):
-        if self.checkReachedTarget != True:
+        if self.checkReachedTarget(target_pos) == False:
             if target_pos[0] > self.x:
                 self.x += 1
             elif target_pos[0] < self.x:
                 self.x -= 1
-            elif target_pos[1] > self.y:
+            else:
+                pass
+
+            if target_pos[1] > self.y:
                 self.y += 1
             elif target_pos[1] < self.y:
                 self.y -= 1
             else:
                 pass
 
-    def checkReachedTarget(self,target_pos):
-        if target_pos[0] != self.x and target_pos[1] != self.y:
+    def checkReachedTarget(self, target_pos):
+        if target_pos[0] == self.x and target_pos[1] == self.y:
             return True
+        else:
+            return False
 
 class InfantryProjectile(pygame.sprite.Sprite):
     def __init__(self, target):
