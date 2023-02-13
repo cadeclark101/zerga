@@ -8,7 +8,7 @@ class MainBuilding(pygame.sprite.Sprite):
         self.w = w
         self.h = h
         self.health = health
-        self.colour = colour
+        self.image = pygame.Surface((w,h))
 
         self.rect = pygame.Rect(self.x, self.y, self.w, self.h)
 

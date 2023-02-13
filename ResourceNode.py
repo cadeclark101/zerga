@@ -12,6 +12,7 @@ class ResourceNode(pygame.sprite.Sprite):
         self.owner = None              
         self.resource_type = random.randint(1, 1 + 1)
         self.rect = pygame.Rect(self.x, self.y, w, h)
+        self.image = pygame.Surface((w,h))
 
         if self.resource_type == 1:
             pygame.draw.rect(surface, (0, 255, 0), self.rect) # GREEN
