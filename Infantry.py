@@ -33,20 +33,28 @@ class Infantry(pygame.sprite.Sprite):
             return True
         else:
             return False
-        
 
 class InfantryProjectile(pygame.sprite.Sprite):
-    def __init__(self, target):
+    def __init__(self, x, y, radius, colour):
         pygame.sprite.Sprite.__init__(self)
-        self.bullet_range_x = 21
-        self.bullet_range_y = 21
-        self.target = target
+        self.x = x
+        self.y = y
+        self.radius = radius
+        self.colour = colour
+        self.vel = 3 
 
-        self.image = pygame.Surface([1, 2])
-        self.image.fill((255, 255, 255))
- 
-        self.rect = self.image.get_rect()
- 
-    def update(self):
-        """ Move the bullet. """
-        self.rect.y -= 3
+        
+    def moveProjToTarget(self, target_pos):
+        if target_pos[0] > self.x:
+            self.x += self.vel
+        elif target_pos[0] < self.x:
+            self.x -= self.vel
+        else:
+            pass
+
+        if target_pos[1] > self.y:
+            self.y += self.vel
+        elif target_pos[1] < self.y:
+            self.y -= self.vel
+        else:
+            pass

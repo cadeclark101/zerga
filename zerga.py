@@ -31,9 +31,10 @@ class MainRun(object):
         self.resource_sprites = pygame.sprite.Group()
         self.building_sprites = pygame.sprite.Group()
         self.troops_sprites = pygame.sprite.Group()
+        self.projectiles = pygame.sprite.Group()
 
-        self.troops_moving = False
         self.mouse_pos = None
+        self.troops_moving = False
 
         self.selected_building_menu_container_rect = pygame.Rect(0, 1040, 1920, 40)
         self.building_menu_container_rect = pygame.Rect(1890, 0, 30, 150)
@@ -49,6 +50,7 @@ class MainRun(object):
         self.drawOverlay()
         self.drawMainBuildingMenu()
         self.drawTroopSprites()
+        self.drawProjectiles()
 
     # DRAW ALL RESOURCE NODE SPRITES
     def drawResourceNodes(self):
@@ -86,6 +88,10 @@ class MainRun(object):
     def drawTroopSprites(self):
         for sprite in self.troops_sprites:
             pygame.draw.rect(self.window_object, sprite.colour, (sprite.x, sprite.y, sprite.w, sprite.h))
+
+    def drawProjectiles(self):
+        for proj in self.projectiles:
+            pygame.draw.circle(self.window_object, proj.colour, (proj.x,proj.y), proj.radius)
 
     # CREATE RIGHT SIDE MENU
     def createBuildMenu(self):
@@ -201,9 +207,17 @@ class MainRun(object):
                 if self.player.selected_menu_button.getButtonID() == 3:
                     placeBuilding(self.player.selected_menu_button.getButtonID(), None)
 
+        # CHECK FOR MIDDLE MOUSE CLICK
+        if click == (False, True, False):
+            if self.player.selected_troop_group != None:
+                self.mouse_pos = mouse_pos
+                for sprite in self.player.selected_troop_group: # Create a bullet for each of the sprites in selected group
+                    new_proj = InfantryProjectile(sprite.x, sprite.y, 5, (0,0,0))
+                    self.projectiles.add(new_proj)
+
 
         # CLEAR CURSOR ON RIGHT CLICK             
-        elif click == (False, False, True): 
+        if click == (False, False, True): 
             self.player.selected_menu_button = None
             print("cleared cursor")
 
@@ -242,11 +256,15 @@ class MainRun(object):
             
             # MOVE PLACED TROOPS
             if self.troops_moving == True:
-                threads = [Thread(target=sprite.moveToTarget(self.mouse_pos)) for sprite in self.player.selected_troop_group]
-                for thread in threads:
+                troop_threads = [Thread(target=sprite.moveToTarget(self.mouse_pos)) for sprite in self.player.selected_troop_group]
+                for thread in troop_threads:
                     thread.start()
-                for thread in threads:
-                    thread.join()
+                self.redrawAll()
+
+            if len(self.projectiles) != 0:
+                proj_threads = [Thread(target=proj.moveProjToTarget(self.mouse_pos)) for proj in self.projectiles]
+                for thread in proj_threads:
+                    thread.start()
                 self.redrawAll()
                 
             
