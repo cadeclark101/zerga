@@ -9,7 +9,6 @@ class Infantry(pygame.sprite.Sprite):
         self.y = y
         self.w = w
         self.h = h
-        self.movement_target = None
 
         self.rect = pygame.Rect(self.x, self.y, self.w, self.h)
 
@@ -34,6 +33,7 @@ class Infantry(pygame.sprite.Sprite):
             return True
         else:
             return False
+        
 
 class InfantryProjectile(pygame.sprite.Sprite):
     def __init__(self, target):

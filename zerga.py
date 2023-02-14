@@ -1,6 +1,4 @@
-import multiprocessing
 from threading import Thread
-import threading
 import numpy as np
 import pygame
 
@@ -13,6 +11,7 @@ from MainBuilding import *
 from Infantry import *
 
 pygame.init()
+
 
 window_width = 1920
 window_height = 1080
@@ -243,8 +242,11 @@ class MainRun(object):
             
             # MOVE PLACED TROOPS
             if self.troops_moving == True:
-                for sprite in self.player.selected_troop_group:
-                    Thread(target=sprite.moveToTarget(self.mouse_pos)).start()
+                threads = [Thread(target=sprite.moveToTarget(self.mouse_pos)) for sprite in self.player.selected_troop_group]
+                for thread in threads:
+                    thread.start()
+                for thread in threads:
+                    thread.join()
                 self.redrawAll()
                 
             
@@ -252,7 +254,6 @@ class MainRun(object):
                 self.createResourceNodes()
             else:
                 self.drawResourceNodes()
-            
             self.createBuildMenu()
             self.drawBuildMenu()
             self.drawOverlay()
