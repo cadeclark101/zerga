@@ -1,5 +1,6 @@
 import pygame
 
+
 class Infantry(pygame.sprite.Sprite):
     def __init__(self, w, h, x, y, health, colour):
         pygame.sprite.Sprite.__init__(self)
@@ -35,26 +36,11 @@ class Infantry(pygame.sprite.Sprite):
             return False
 
 class InfantryProjectile(pygame.sprite.Sprite):
-    def __init__(self, x, y, radius, colour):
+    def __init__(self, startX, startY, endX, endY, colour):
         pygame.sprite.Sprite.__init__(self)
-        self.x = x
-        self.y = y
-        self.radius = radius
+        self.startX = startX
+        self.startY = startY
+        self.endX = endX
+        self.endY = endY
         self.colour = colour
-        self.vel = 3 
 
-        
-    def moveProjToTarget(self, target_pos):
-        if target_pos[0] > self.x:
-            self.x += self.vel
-        elif target_pos[0] < self.x:
-            self.x -= self.vel
-        else:
-            pass
-
-        if target_pos[1] > self.y:
-            self.y += self.vel
-        elif target_pos[1] < self.y:
-            self.y -= self.vel
-        else:
-            pass

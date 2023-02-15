@@ -89,9 +89,10 @@ class MainRun(object):
         for sprite in self.troops_sprites:
             pygame.draw.rect(self.window_object, sprite.colour, (sprite.x, sprite.y, sprite.w, sprite.h))
 
+    # DRAW PROJECTILES
     def drawProjectiles(self):
         for proj in self.projectiles:
-            pygame.draw.circle(self.window_object, proj.colour, (proj.x,proj.y), proj.radius)
+            pygame.draw.line(self.window_object, proj.colour, (proj.startX, proj.startY), (proj.endX, proj.endY), 3)
 
     # CREATE RIGHT SIDE MENU
     def createBuildMenu(self):
@@ -140,37 +141,20 @@ class MainRun(object):
                 self.player.increaseResourceIncome(resource_type, 1)    
                 self.building_sprites.add(new_building)
                 self.drawBuildingSprites()
-                self.drawBuildMenu()
 
             # CREATE NEW MAIN BUILDING TYPE
             elif button_id == 3:
                 new_building = MainBuilding(mouse_pos[0], mouse_pos[1], 50, 50, 1000, (123, 123, 123))
-                if checkForCollision(new_building.rect) == True:
+                if new_building.checkForCollision(self.building_sprites, self.resource_sprites, self.building_menu_container_rect) == True:
                     print("collides")
                 else:
                     self.building_sprites.add(new_building)
                     self.drawBuildingSprites() # Redraw all sprites
-                    self.drawBuildMenu() # Redraw all sprites
             else:
                 pass
-        
-        # CHECK FOR NEW BUILDING COLLISION BEFORE PLACING
-        def checkForCollision(new_building_rect):
-            collides = False
 
-            if new_building_rect.colliderect(self.building_menu_container_rect): # Check if building will collide with menu
-                collides = True
 
-            if len(self.building_sprites) != 0: # Check if building will collide with existing buildings
-                for building_sprite in self.building_sprites:
-                    if new_building_rect.colliderect(building_sprite.rect):
-                        collides = True
 
-            for resource_sprite in self.resource_sprites: # Check if new building will collide with any resource nodes
-                if new_building_rect.colliderect(resource_sprite.rect):
-                    collides = True 
-
-            return collides
 
         # CHECK FOR LEFT CLICK
         if click == (True, False, False): 
@@ -209,11 +193,12 @@ class MainRun(object):
 
         # CHECK FOR MIDDLE MOUSE CLICK
         if click == (False, True, False):
+            proj_target = pygame.mouse.get_pos()
             if self.player.selected_troop_group != None:
-                self.mouse_pos = mouse_pos
                 for sprite in self.player.selected_troop_group: # Create a bullet for each of the sprites in selected group
-                    new_proj = InfantryProjectile(sprite.x, sprite.y, 5, (0,0,0))
+                    new_proj = InfantryProjectile(sprite.x, sprite.y, proj_target[0], proj_target[1], (0,0,0))
                     self.projectiles.add(new_proj)
+                    self.drawProjectiles()
 
 
         # CLEAR CURSOR ON RIGHT CLICK             
@@ -249,21 +234,15 @@ class MainRun(object):
                     self.player.selected_troop_group = self.troops_sprites # REMOVE THIS JUST FOR TESTING
                     if self.player.selected_troop_group == self.troops_sprites:
                         if event.key == pygame.K_SPACE:
-                            self.mouse_pos = pygame.mouse.get_pos() 
+                            target_pos = pygame.mouse.get_pos() 
                             self.troops_moving = True
                     else:
                         pass
             
             # MOVE PLACED TROOPS
             if self.troops_moving == True:
-                troop_threads = [Thread(target=sprite.moveToTarget(self.mouse_pos)) for sprite in self.player.selected_troop_group]
+                troop_threads = [Thread(target=sprite.moveToTarget(target_pos)) for sprite in self.player.selected_troop_group]
                 for thread in troop_threads:
-                    thread.start()
-                self.redrawAll()
-
-            if len(self.projectiles) != 0:
-                proj_threads = [Thread(target=proj.moveProjToTarget(self.mouse_pos)) for proj in self.projectiles]
-                for thread in proj_threads:
                     thread.start()
                 self.redrawAll()
                 

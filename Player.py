@@ -8,8 +8,6 @@ class Player(object):
         self.green_resource_income = green_resource_income
         self.blue_resource_income = blue_resource_income
 
-        self.active_units = []
-
         self.selected_menu_button = None
         self.selected_building = None
         self.selected_troop_group = None
