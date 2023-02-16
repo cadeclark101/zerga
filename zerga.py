@@ -103,18 +103,17 @@ class MainRun(object):
         troops_sprites.draw(self.window_object)
 
     # FIRE PROJECTILE FROM ALL SELECTED SPRITES
-    def fireProj(self, sprite, proj_target):
-        new_proj = InfantryProjectile(sprite.rect.x, sprite.rect.y, proj_target[0], proj_target[1], (0,0,0))
-        projectiles.add(new_proj)
-        self.drawProjectiles()
-        remove_proj_thread = Timer(0.5, self.removeProj, [new_proj],{})
-        remove_proj_thread.start()
+    def fireProj(self, proj_direction):
+        for sprite in troops_sprites:
+            new_proj = InfantryProjectile(sprite.rect.x, sprite.rect.y, 5, 5, proj_direction, 3, 10, (0,0,0))
+            projectiles.add(new_proj)
+        projectiles.draw(self.window_object)
 
     # REMOVE PROJECTILE AFTER X AMOUNT OF TIME
     def removeProj(self, proj):
         proj.kill()
         projectiles.remove(proj)
-        self.drawProjectiles()
+        self.drawProjectiles(self.window_object)
 
 
     def handleClickEvent(self, mouse_pos, click):
@@ -179,11 +178,9 @@ class MainRun(object):
 
         # CHECK FOR MIDDLE MOUSE CLICK
         if click == (False, True, False):
-            proj_target = pygame.mouse.get_pos()
+            proj_direction = pygame.mouse.get_pos()
             if self.player.selected_troop_group != None:
-                proj_threads = [Thread(target=self.fireProj(sprite, proj_target)) for sprite in self.player.selected_troop_group]
-                for thread in proj_threads:
-                    thread.start()
+                self.fireProj(proj_direction)
 
         # CLEAR CURSOR ON RIGHT CLICK             
         if click == (False, False, True): 
@@ -225,6 +222,10 @@ class MainRun(object):
             if len(self.moving_troops) != 0:
                 self.moving_troops.update(target_pos)
                 self.moving_troops.draw(self.window_object)
+
+            if len(projectiles) != 0:
+                projectiles.update()
+                projectiles.draw(self.window_object)
             
             self.drawOverlay()
 

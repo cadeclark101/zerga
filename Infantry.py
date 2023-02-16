@@ -45,10 +45,37 @@ class Infantry(pygame.sprite.Sprite):
             return False
 
 class InfantryProjectile(pygame.sprite.Sprite):
-    def __init__(self, startX, startY, endX, endY, colour):
+    def __init__(self, x, y, w, h, direction, speed, range, colour):
         pygame.sprite.Sprite.__init__(self)
-        self.startX = startX
-        self.startY = startY
-        self.endX = endX
-        self.endY = endY
+        self.startX = x
+        self.startY = y
+        self.currentX = x
+        self.currentY = y
+        self.w = w
+        self.h = h
+        self.direction = direction
+        self.speed = speed
+        self.range = range
         self.colour = colour
+
+        self.image = pygame.Surface([w,h])
+        self.image.fill(colour)
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+
+    def update(self):
+        if self.checkReachedRange() == False:
+            self.rect.x += self.speed
+            self.rect.y += self.speed
+        else:
+            return
+
+
+    def checkReachedRange(self):
+        if (self.currentX == (self.startX + self.range)) :
+            return True
+        elif (self.startY == self.currentY + self.range):
+            return True
+        else:
+            return False
