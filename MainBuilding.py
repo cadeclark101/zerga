@@ -10,7 +10,11 @@ class MainBuilding(pygame.sprite.Sprite):
         self.health = health
         self.colour = colour
 
-        self.rect = pygame.Rect(self.x, self.y, self.w, self.h)
+        self.image = pygame.Surface([w,h])
+        self.image.fill(colour)
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
 
     # CHECK FOR NEW BUILDING COLLISION BEFORE PLACING
     def checkForCollision(self, building_sprites, resource_sprites, building_menu_container_rect):

@@ -11,7 +11,11 @@ class BlueBuilding(pygame.sprite.Sprite):
         self.h = h
         self.owner = owner
 
-        self.rect = pygame.Rect(self.x, self.y, self.w, self.h)
+        self.image = pygame.Surface([w,h])
+        self.image.fill(colour)
+        self.rect = self.image.get_rect()
+        self.rect.x = self.x
+        self.rect.y = self.y
 
         self.increaseBlueIncome()
 

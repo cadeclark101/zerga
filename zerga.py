@@ -48,31 +48,6 @@ class MainRun(object):
         
         self.Main()
 
-    def redrawAll(self):
-        window_object.fill((255, 255, 255))
-        self.drawBuildMenu()
-        self.drawBuildingSprites()
-        self.drawOverlay()
-        self.drawMainBuildingMenu()
-        #self.drawTroopSprites()
-        self.drawProjectiles()
-
-    # DRAW ALL RESOURCE NODE SPRITES
-    def drawResourceNodes(self):
-        for resource_sprite in self.resource_sprites:
-            pygame.draw.rect(self.window_object, resource_sprite.colour, (resource_sprite))
-
-    # DRAW ALL MENU SPRITES
-    def drawBuildMenu(self):
-        pygame.draw.rect(self.window_object, (255, 255, 255), self.building_menu_container_rect)
-        for sprite in self.building_menu_sprites:
-            pygame.draw.rect(self.window_object, sprite.colour, (sprite.x, sprite.y, sprite.w, sprite.h))
-
-
-    # DRAW ALL BUILDING SPRITES
-    def drawBuildingSprites(self):
-        for sprite in building_sprites:
-            pygame.draw.rect(self.window_object, sprite.colour, (sprite.x, sprite.y, sprite.w, sprite.h))
 
     # DRAW INFO OVERLAY
     def drawOverlay(self):
@@ -120,7 +95,6 @@ class MainRun(object):
             blue_resource_obj = ResourceNode(1920, 1080, 10, 10, (0, 0, 128))
             self.resource_sprites.add(green_resource_obj)
             self.resource_sprites.add(blue_resource_obj)
-        self.drawResourceNodes()
 
     # SPAWN NEW TROOP
     def createTroop(self):
@@ -135,13 +109,12 @@ class MainRun(object):
         self.drawProjectiles()
         remove_proj_thread = Timer(0.5, self.removeProj, [new_proj],{})
         remove_proj_thread.start()
-        self.redrawAll()
 
     # REMOVE PROJECTILE AFTER X AMOUNT OF TIME
     def removeProj(self, proj):
         proj.kill()
         projectiles.remove(proj)
-        self.redrawAll()
+        self.drawProjectiles()
 
 
     def handleClickEvent(self, mouse_pos, click):
@@ -156,7 +129,6 @@ class MainRun(object):
                     new_building = BlueBuilding(20, 20, 500, (0, 0, 128), resource_node, self.player) # Place blue resource building   
                     print(self.player.green_resource_income)
                 building_sprites.add(new_building)
-                self.drawBuildingSprites()
 
             # CREATE NEW MAIN BUILDING TYPE
             elif button_id == 3:
@@ -165,7 +137,7 @@ class MainRun(object):
                     print("collides")
                 else:
                     building_sprites.add(new_building)
-                    self.drawBuildingSprites() # Redraw all sprites
+
             else:
                 pass
 
@@ -225,7 +197,7 @@ class MainRun(object):
         run = True
 
         while run:
-
+            self.window_object.fill((255,255,255))
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     run = False
@@ -253,19 +225,19 @@ class MainRun(object):
             if len(self.moving_troops) != 0:
                 self.moving_troops.update(target_pos)
                 self.moving_troops.draw(self.window_object)
-
             
-            self.drawBuildMenu()
             self.drawOverlay()
 
             if self.firstRun == True:
                 self.createResourceNodes()
                 self.createBuildMenu()
                 self.firstRun = False
-            else:
-                self.drawResourceNodes()
+
+            self.resource_sprites.draw(self.window_object)
+            self.building_menu_sprites.draw(self.window_object)
+            building_sprites.draw(self.window_object)
+            troops_sprites.draw(self.window_object)
                 
-            
 
             pygame.display.update()
             clock.tick(framerate)
