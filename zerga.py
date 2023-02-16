@@ -34,7 +34,7 @@ class MainRun(object):
         self.selected_building_menu_sprites = pygame.sprite.Group()
         self.resource_sprites = pygame.sprite.Group()
 
-        self.moving_troop_threads = []
+        self.moving_troops = pygame.sprite.Group()
 
         self.selected_building_menu_container_rect = pygame.Rect(0, 1040, 1920, 40)
         self.building_menu_container_rect = pygame.Rect(1890, 0, 30, 150)
@@ -123,7 +123,7 @@ class MainRun(object):
 
     # SPAWN NEW TROOP
     def createTroop(self):
-        new_troop = Infantry(10, 10, self.player.selected_building.x, self.player.selected_building.y, 5, (0, 0, 0), self)
+        new_troop = Infantry(10, 10, self.player.selected_building.x, self.player.selected_building.y, 5, (0, 0, 0))
         troops_sprites.add(new_troop)
         self.drawTroopSprites()
 
@@ -241,12 +241,20 @@ class MainRun(object):
                     self.player.selected_troop_group = troops_sprites # REMOVE THIS JUST FOR TESTING
                     if self.player.selected_troop_group == troops_sprites:
                         if event.key == pygame.K_SPACE:
-                            movement_target_pos = pygame.mouse.get_pos() 
-                            for sprite in self.player.selected_troop_group:
-                                sprite.createMovementThread(movement_target_pos)       
+                            target_pos = pygame.mouse.get_pos() 
+                            [self.moving_troops.add(sprite) for sprite in self.player.selected_troop_group]
                     else:
                         pass
-
+            
+            # MOVE PLACED TROOPS
+            if len(self.moving_troops) != 0:
+                moving_troop_threads = [Thread(target=sprite.moveToTarget(target_pos)) for sprite in self.moving_troops]
+                print(len(moving_troop_threads))
+                for thread in moving_troop_threads:
+                    thread.start()
+                self.redrawAll()
+                
+            
             if len(self.resource_sprites) == 0:
                 self.createResourceNodes()
             else:
@@ -254,6 +262,7 @@ class MainRun(object):
             self.createBuildMenu()
             self.drawBuildMenu()
             self.drawOverlay()
+            self.drawTroopSprites()
             
 
             pygame.display.update() 
