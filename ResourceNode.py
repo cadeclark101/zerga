@@ -9,7 +9,10 @@ class ResourceNode(pygame.sprite.Sprite):
         self.x = random.randint(1, x - 30)
         self.y = random.randint(1, y - 30)
         self.w = w
-        self.h = h            
+        self.h = h    
+        self.colour = colour        
         self.resource_type = random.randint(1, 1 + 1)
+        
         self.rect = pygame.Rect(self.x, self.y, w, h)
-        self.colour = colour
+
+        

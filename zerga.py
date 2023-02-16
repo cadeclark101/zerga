@@ -1,5 +1,5 @@
-from threading import Event, Thread, Timer
-import threading
+from threading import Thread, Timer
+from profilehooks import profile
 import numpy as np
 import pygame
 
@@ -13,6 +13,9 @@ from Infantry import *
 
 pygame.init()
 
+clock = pygame.time.Clock()
+framerate = 60
+
 building_sprites = pygame.sprite.Group()
 troops_sprites = pygame.sprite.Group()
 projectiles = pygame.sprite.Group()
@@ -24,6 +27,8 @@ window_object.fill((255, 255, 255))
 
 class MainRun(object):
     def __init__(self,window_width,window_height, window_object):
+        self.firstRun = True
+
         self.window_width = window_width
         self.window_height = window_height
         self.window_object = window_object
@@ -49,7 +54,7 @@ class MainRun(object):
         self.drawBuildingSprites()
         self.drawOverlay()
         self.drawMainBuildingMenu()
-        self.drawTroopSprites()
+        #self.drawTroopSprites()
         self.drawProjectiles()
 
     # DRAW ALL RESOURCE NODE SPRITES
@@ -84,10 +89,6 @@ class MainRun(object):
         for sprite in self.selected_building_menu_sprites:
             pygame.draw.rect(self.window_object, sprite.colour, (sprite.x, sprite.y, sprite.w, sprite.h))
 
-    # DRAW ALL TROOP SPRITES
-    def drawTroopSprites(self):
-        for sprite in troops_sprites:
-            pygame.draw.rect(self.window_object, sprite.colour, (sprite.x, sprite.y, sprite.w, sprite.h))
 
     # DRAW PROJECTILES
     def drawProjectiles(self):
@@ -125,11 +126,11 @@ class MainRun(object):
     def createTroop(self):
         new_troop = Infantry(10, 10, self.player.selected_building.x, self.player.selected_building.y, 5, (0, 0, 0))
         troops_sprites.add(new_troop)
-        self.drawTroopSprites()
+        troops_sprites.draw(self.window_object)
 
     # FIRE PROJECTILE FROM ALL SELECTED SPRITES
     def fireProj(self, sprite, proj_target):
-        new_proj = InfantryProjectile(sprite.x, sprite.y, proj_target[0], proj_target[1], (0,0,0))
+        new_proj = InfantryProjectile(sprite.rect.x, sprite.rect.y, proj_target[0], proj_target[1], (0,0,0))
         projectiles.add(new_proj)
         self.drawProjectiles()
         remove_proj_thread = Timer(0.5, self.removeProj, [new_proj],{})
@@ -138,7 +139,9 @@ class MainRun(object):
 
     # REMOVE PROJECTILE AFTER X AMOUNT OF TIME
     def removeProj(self, proj):
+        proj.kill()
         projectiles.remove(proj)
+        self.redrawAll()
 
 
     def handleClickEvent(self, mouse_pos, click):
@@ -217,7 +220,7 @@ class MainRun(object):
 
                                     
             
-
+    @profile
     def Main(self):
         run = True
 
@@ -248,28 +251,29 @@ class MainRun(object):
             
             # MOVE PLACED TROOPS
             if len(self.moving_troops) != 0:
-                moving_troop_threads = [Thread(target=sprite.moveToTarget(target_pos)) for sprite in self.moving_troops]
-                print(len(moving_troop_threads))
-                for thread in moving_troop_threads:
-                    thread.start()
-                self.redrawAll()
-                
+                self.moving_troops.update(target_pos)
+                self.moving_troops.draw(self.window_object)
+
             
-            if len(self.resource_sprites) == 0:
-                self.createResourceNodes()
-            else:
-                self.drawResourceNodes()
-            self.createBuildMenu()
             self.drawBuildMenu()
             self.drawOverlay()
-            self.drawTroopSprites()
+
+            if self.firstRun == True:
+                self.createResourceNodes()
+                self.createBuildMenu()
+                self.firstRun = False
+            else:
+                self.drawResourceNodes()
+                
             
 
-            pygame.display.update() 
+            pygame.display.update()
+            clock.tick(framerate)
         pygame.quit()
 
 
 if __name__ == "__main__":
     MainRun(window_width, window_height, window_object)
+
 
     
