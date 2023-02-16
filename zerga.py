@@ -1,4 +1,5 @@
-from threading import Thread
+from threading import Event, Thread, Timer
+import threading
 import numpy as np
 import pygame
 
@@ -12,6 +13,9 @@ from Infantry import *
 
 pygame.init()
 
+building_sprites = pygame.sprite.Group()
+troops_sprites = pygame.sprite.Group()
+projectiles = pygame.sprite.Group()
 
 window_width = 1920
 window_height = 1080
@@ -29,12 +33,8 @@ class MainRun(object):
         self.building_menu_sprites = pygame.sprite.Group()
         self.selected_building_menu_sprites = pygame.sprite.Group()
         self.resource_sprites = pygame.sprite.Group()
-        self.building_sprites = pygame.sprite.Group()
-        self.troops_sprites = pygame.sprite.Group()
-        self.projectiles = pygame.sprite.Group()
 
-        self.mouse_pos = None
-        self.troops_moving = False
+        self.moving_troop_threads = []
 
         self.selected_building_menu_container_rect = pygame.Rect(0, 1040, 1920, 40)
         self.building_menu_container_rect = pygame.Rect(1890, 0, 30, 150)
@@ -59,14 +59,14 @@ class MainRun(object):
 
     # DRAW ALL MENU SPRITES
     def drawBuildMenu(self):
-        building_menu_container_rect = pygame.draw.rect(self.window_object, (255, 255, 255), self.building_menu_container_rect)
+        pygame.draw.rect(self.window_object, (255, 255, 255), self.building_menu_container_rect)
         for sprite in self.building_menu_sprites:
             pygame.draw.rect(self.window_object, sprite.colour, (sprite.x, sprite.y, sprite.w, sprite.h))
 
 
     # DRAW ALL BUILDING SPRITES
     def drawBuildingSprites(self):
-        for sprite in self.building_sprites:
+        for sprite in building_sprites:
             pygame.draw.rect(self.window_object, sprite.colour, (sprite.x, sprite.y, sprite.w, sprite.h))
 
     # DRAW INFO OVERLAY
@@ -80,18 +80,18 @@ class MainRun(object):
 
     # DRAW TROOP MENU FOR MAIN BUILDING
     def drawMainBuildingMenu(self):
-        selected_building_menu_container_rect = pygame.draw.rect(self.window_object, (255, 255, 255), self.selected_building_menu_container_rect)
+        pygame.draw.rect(self.window_object, (255, 255, 255), self.selected_building_menu_container_rect)
         for sprite in self.selected_building_menu_sprites:
             pygame.draw.rect(self.window_object, sprite.colour, (sprite.x, sprite.y, sprite.w, sprite.h))
 
     # DRAW ALL TROOP SPRITES
     def drawTroopSprites(self):
-        for sprite in self.troops_sprites:
+        for sprite in troops_sprites:
             pygame.draw.rect(self.window_object, sprite.colour, (sprite.x, sprite.y, sprite.w, sprite.h))
 
     # DRAW PROJECTILES
     def drawProjectiles(self):
-        for proj in self.projectiles:
+        for proj in projectiles:
             pygame.draw.line(self.window_object, proj.colour, (proj.startX, proj.startY), (proj.endX, proj.endY), 3)
 
     # CREATE RIGHT SIDE MENU
@@ -115,18 +115,30 @@ class MainRun(object):
     # CREATE RESOURCE NODE OBJECTS
     def createResourceNodes(self):
         for i in range(20):
-            green_resource_obj = ResourceNode(1920, 1080, 5, 5, (0, 255, 0))
-            blue_resource_obj = ResourceNode(1920, 1080, 5, 5, (0, 0, 128))
+            green_resource_obj = ResourceNode(1920, 1080, 10, 10, (0, 255, 0))
+            blue_resource_obj = ResourceNode(1920, 1080, 10, 10, (0, 0, 128))
             self.resource_sprites.add(green_resource_obj)
             self.resource_sprites.add(blue_resource_obj)
         self.drawResourceNodes()
 
     # SPAWN NEW TROOP
-    def spawnTroop(self):
-        new_troop = Infantry(10, 10, self.player.selected_building.x, self.player.selected_building.y, 5, (0, 0, 0))
-        self.troops_sprites.add(new_troop)
+    def createTroop(self):
+        new_troop = Infantry(10, 10, self.player.selected_building.x, self.player.selected_building.y, 5, (0, 0, 0), self)
+        troops_sprites.add(new_troop)
         self.drawTroopSprites()
 
+    # FIRE PROJECTILE FROM ALL SELECTED SPRITES
+    def fireProj(self, sprite, proj_target):
+        new_proj = InfantryProjectile(sprite.x, sprite.y, proj_target[0], proj_target[1], (0,0,0))
+        projectiles.add(new_proj)
+        self.drawProjectiles()
+        remove_proj_thread = Timer(0.5, self.removeProj, [new_proj],{})
+        remove_proj_thread.start()
+        self.redrawAll()
+
+    # REMOVE PROJECTILE AFTER X AMOUNT OF TIME
+    def removeProj(self, proj):
+        projectiles.remove(proj)
 
 
     def handleClickEvent(self, mouse_pos, click):
@@ -135,25 +147,24 @@ class MainRun(object):
         def placeBuilding(button_id, resource_type):
             if button_id == resource_type: # Check clicked resource type is same as button id (green = 1, blue = 2)
                 if resource_type == 1: # Check for green resource clicked
-                    new_building = GreenBuilding(10, 10, 500, (0, 255, 0), resource_node) # Place green resource building
+                    new_building = GreenBuilding(20, 20, 500, (0, 255, 0), resource_node, self.player) # Place green resource building
+                    print(self.player.green_resource_income)
                 elif resource_type == 2:
-                    new_building = BlueBuilding(10, 10, 500, (0, 0, 128), resource_node) # Place blue resource building
-                self.player.increaseResourceIncome(resource_type, 1)    
-                self.building_sprites.add(new_building)
+                    new_building = BlueBuilding(20, 20, 500, (0, 0, 128), resource_node, self.player) # Place blue resource building   
+                    print(self.player.green_resource_income)
+                building_sprites.add(new_building)
                 self.drawBuildingSprites()
 
             # CREATE NEW MAIN BUILDING TYPE
             elif button_id == 3:
                 new_building = MainBuilding(mouse_pos[0], mouse_pos[1], 50, 50, 1000, (123, 123, 123))
-                if new_building.checkForCollision(self.building_sprites, self.resource_sprites, self.building_menu_container_rect) == True:
+                if new_building.checkForCollision(building_sprites, self.resource_sprites, self.building_menu_container_rect) == True:
                     print("collides")
                 else:
-                    self.building_sprites.add(new_building)
+                    building_sprites.add(new_building)
                     self.drawBuildingSprites() # Redraw all sprites
             else:
                 pass
-
-
 
 
         # CHECK FOR LEFT CLICK
@@ -178,7 +189,7 @@ class MainRun(object):
                     pass
 
             # CHECK IF BUILDING IS CLICKED
-            for building_sprite in self.building_sprites:
+            for building_sprite in building_sprites:
                 if building_sprite.rect.collidepoint(mouse_pos):
                     self.player.selected_menu_button = None
                     self.player.selected_building = building_sprite
@@ -195,19 +206,15 @@ class MainRun(object):
         if click == (False, True, False):
             proj_target = pygame.mouse.get_pos()
             if self.player.selected_troop_group != None:
-                for sprite in self.player.selected_troop_group: # Create a bullet for each of the sprites in selected group
-                    new_proj = InfantryProjectile(sprite.x, sprite.y, proj_target[0], proj_target[1], (0,0,0))
-                    self.projectiles.add(new_proj)
-                    self.drawProjectiles()
-
+                proj_threads = [Thread(target=self.fireProj(sprite, proj_target)) for sprite in self.player.selected_troop_group]
+                for thread in proj_threads:
+                    thread.start()
 
         # CLEAR CURSOR ON RIGHT CLICK             
         if click == (False, False, True): 
             self.player.selected_menu_button = None
             print("cleared cursor")
 
-        
-        
                                     
             
 
@@ -229,24 +236,17 @@ class MainRun(object):
                 if event.type == pygame.KEYDOWN:
                     if self.player.selected_building is not None: # Spawn troops if building is selected and "a" is pressed
                         if event.key == pygame.K_a:
-                            self.spawnTroop()
+                            self.createTroop()
                 
-                    self.player.selected_troop_group = self.troops_sprites # REMOVE THIS JUST FOR TESTING
-                    if self.player.selected_troop_group == self.troops_sprites:
+                    self.player.selected_troop_group = troops_sprites # REMOVE THIS JUST FOR TESTING
+                    if self.player.selected_troop_group == troops_sprites:
                         if event.key == pygame.K_SPACE:
-                            target_pos = pygame.mouse.get_pos() 
-                            self.troops_moving = True
+                            movement_target_pos = pygame.mouse.get_pos() 
+                            for sprite in self.player.selected_troop_group:
+                                sprite.createMovementThread(movement_target_pos)       
                     else:
                         pass
-            
-            # MOVE PLACED TROOPS
-            if self.troops_moving == True:
-                troop_threads = [Thread(target=sprite.moveToTarget(target_pos)) for sprite in self.player.selected_troop_group]
-                for thread in troop_threads:
-                    thread.start()
-                self.redrawAll()
-                
-            
+
             if len(self.resource_sprites) == 0:
                 self.createResourceNodes()
             else:
@@ -254,7 +254,6 @@ class MainRun(object):
             self.createBuildMenu()
             self.drawBuildMenu()
             self.drawOverlay()
-            self.drawTroopSprites()
             
 
             pygame.display.update() 
@@ -263,3 +262,5 @@ class MainRun(object):
 
 if __name__ == "__main__":
     MainRun(window_width, window_height, window_object)
+
+    

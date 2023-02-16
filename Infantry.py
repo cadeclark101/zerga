@@ -1,8 +1,8 @@
 import pygame
-
+from threading import Thread
 
 class Infantry(pygame.sprite.Sprite):
-    def __init__(self, w, h, x, y, health, colour):
+    def __init__(self, w, h, x, y, health, colour, zerga):
         pygame.sprite.Sprite.__init__(self)
         self.health = health
         self.colour = colour
@@ -10,27 +10,36 @@ class Infantry(pygame.sprite.Sprite):
         self.y = y
         self.w = w
         self.h = h
+        self.zerga = zerga
 
+        self.movement_thread = None
         self.rect = pygame.Rect(self.x, self.y, self.w, self.h)
 
-    def moveToTarget(self, target_pos):
-        if self.checkReachedTarget(target_pos) == False:
-            if target_pos[0] > self.x:
+    def createMovementThread(self, movement_target_pos):
+        movement_thread = Thread(target=self.moveToTarget(movement_target_pos)) 
+        self.movement_thread = movement_thread
+        print(self.movement_thread)
+        self.movement_thread.start()
+
+    def moveToTarget(self, movement_target_pos):
+        while self.checkReachedTarget(movement_target_pos) == False:
+            if movement_target_pos[0] > self.x:
                 self.x += 1
-            elif target_pos[0] < self.x:
+            elif movement_target_pos[0] < self.x:
                 self.x -= 1
             else:
                 pass
 
-            if target_pos[1] > self.y:
+            if movement_target_pos[1] > self.y:
                 self.y += 1
-            elif target_pos[1] < self.y:
+            elif movement_target_pos[1] < self.y:
                 self.y -= 1
             else:
                 pass
+            self.zerga.redrawAll()
 
-    def checkReachedTarget(self, target_pos):
-        if target_pos[0] == self.x and target_pos[1] == self.y:
+    def checkReachedTarget(self, movement_target_pos):
+        if movement_target_pos[0] == self.x and movement_target_pos[1] == self.y:
             return True
         else:
             return False
@@ -43,4 +52,3 @@ class InfantryProjectile(pygame.sprite.Sprite):
         self.endX = endX
         self.endY = endY
         self.colour = colour
-

@@ -16,11 +16,6 @@ class Player(object):
         self.green_resource += self.green_resource_income
         self.blue_resource += self.blue_resource_income
 
-    def increaseResourceIncome(self, resource, amount):
-        if resource == 1:
-            self.green_resource_income += amount
-        else:
-            self.blue_resource_income += amount
 
 
     
