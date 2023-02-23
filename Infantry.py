@@ -3,7 +3,7 @@ import pygame
 
 
 class Infantry(pygame.sprite.Sprite):
-    def __init__(self, w, h, x, y, health, colour):
+    def __init__(self, w, h, x, y, health, colour, player):
         pygame.sprite.Sprite.__init__(self)
         self.health = health
         self.colour = colour
@@ -11,14 +11,14 @@ class Infantry(pygame.sprite.Sprite):
         self.y = y
         self.w = w
         self.h = h
+
+        self.owner = player
         
         self.image = pygame.Surface([w,h])
         self.image.fill(colour)
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
-
-        
     
     def update(self, target_pos):
         if self.checkReachedTarget(target_pos) == False:
@@ -44,16 +44,15 @@ class Infantry(pygame.sprite.Sprite):
         else:
             return False
 
+
 class InfantryProjectile(pygame.sprite.Sprite):
-    def __init__(self, x, y, w, h, direction, speed, range, colour):
+    def __init__(self, x, y, w, h, target, speed, range, colour):
         pygame.sprite.Sprite.__init__(self)
-        self.startX = x
-        self.startY = y
-        self.currentX = x
-        self.currentY = y
         self.w = w
         self.h = h
-        self.direction = direction
+        self.startX = x
+        self.startY = y
+        self.target = target
         self.speed = speed
         self.range = range
         self.colour = colour
@@ -66,16 +65,33 @@ class InfantryProjectile(pygame.sprite.Sprite):
 
     def update(self):
         if self.checkReachedRange() == False:
-            self.rect.x += self.speed
-            self.rect.y += self.speed
+            if self.target[0] > self.rect.x:
+                self.rect.x += self.speed
+            elif self.target[0] < self.rect.x:
+                self.rect.x -= self.speed
+            else:
+                pass
+
+            if self.target[1] > self.rect.y:
+                self.rect.y += self.speed
+            elif self.target[1] < self.rect.y:
+                self.rect.y -= self.speed
+            else:
+                pass
         else:
-            return
+            self.kill()
 
 
-    def checkReachedRange(self):
-        if (self.currentX == (self.startX + self.range)) :
+    def checkReachedRange(self): 
+        if (self.rect.x == self.target[0]) and (self.rect.y == self.target[1]):
             return True
-        elif (self.startY == self.currentY + self.range):
+        elif (self.startX - self.rect.x == -abs(self.range)):
+            return True
+        elif (self.startX - self.rect.x == self.range):
+            return True
+        elif (self.startY - self.rect.y == -abs(self.range)):
+            return True
+        elif (self.startY - self.rect.y == self.range):
             return True
         else:
             return False

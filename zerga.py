@@ -3,6 +3,7 @@ from profilehooks import profile
 import numpy as np
 import pygame
 
+
 from ResourceNode import *
 from Player import *
 from MenuButton import *
@@ -34,6 +35,7 @@ class MainRun(object):
         self.window_object = window_object
         
         self.player = Player(0, 0, 0, 0)
+        self.enemy = Enemy(0, 0, 0, 0)
 
         self.building_menu_sprites = pygame.sprite.Group()
         self.selected_building_menu_sprites = pygame.sprite.Group()
@@ -98,22 +100,14 @@ class MainRun(object):
 
     # SPAWN NEW TROOP
     def createTroop(self):
-        new_troop = Infantry(10, 10, self.player.selected_building.x, self.player.selected_building.y, 5, (0, 0, 0))
+        new_troop = Infantry(10, 10, self.player.selected_building.x, self.player.selected_building.y, 5, (0, 0, 0), self.player)
         troops_sprites.add(new_troop)
-        troops_sprites.draw(self.window_object)
 
     # FIRE PROJECTILE FROM ALL SELECTED SPRITES
     def fireProj(self, proj_direction):
         for sprite in troops_sprites:
-            new_proj = InfantryProjectile(sprite.rect.x, sprite.rect.y, 5, 5, proj_direction, 3, 10, (0,0,0))
+            new_proj = InfantryProjectile(sprite.rect.x, sprite.rect.y, 5, 5, proj_direction, 1, 100, (0,0,0))
             projectiles.add(new_proj)
-        projectiles.draw(self.window_object)
-
-    # REMOVE PROJECTILE AFTER X AMOUNT OF TIME
-    def removeProj(self, proj):
-        proj.kill()
-        projectiles.remove(proj)
-        self.drawProjectiles(self.window_object)
 
 
     def handleClickEvent(self, mouse_pos, click):
@@ -223,9 +217,8 @@ class MainRun(object):
                 self.moving_troops.update(target_pos)
                 self.moving_troops.draw(self.window_object)
 
-            if len(projectiles) != 0:
-                projectiles.update()
-                projectiles.draw(self.window_object)
+            projectiles.update()
+            projectiles.draw(self.window_object)
             
             self.drawOverlay()
 
@@ -240,7 +233,7 @@ class MainRun(object):
             troops_sprites.draw(self.window_object)
                 
 
-            pygame.display.update()
+            pygame.display.flip()
             clock.tick(framerate)
         pygame.quit()
 

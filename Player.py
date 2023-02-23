@@ -16,6 +16,3 @@ class Player(object):
         self.green_resource += self.green_resource_income
         self.blue_resource += self.blue_resource_income
 
-
-
-    
