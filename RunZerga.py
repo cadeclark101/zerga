@@ -3,7 +3,7 @@ from profilehooks import profile
 import numpy as np
 import pygame
 
-
+from Enemy import *
 from ResourceNode import *
 from Player import *
 from MenuButton import *
@@ -18,8 +18,9 @@ clock = pygame.time.Clock()
 framerate = 60
 
 building_sprites = pygame.sprite.Group()
-troops_sprites = pygame.sprite.Group()
+all_troop_sprites = pygame.sprite.Group()
 projectiles = pygame.sprite.Group()
+resource_sprites = pygame.sprite.Group()
 
 window_width = 1920
 window_height = 1080
@@ -39,7 +40,6 @@ class MainRun(object):
 
         self.building_menu_sprites = pygame.sprite.Group()
         self.selected_building_menu_sprites = pygame.sprite.Group()
-        self.resource_sprites = pygame.sprite.Group()
 
         self.moving_troops = pygame.sprite.Group()
 
@@ -95,18 +95,19 @@ class MainRun(object):
         for i in range(20):
             green_resource_obj = ResourceNode(1920, 1080, 10, 10, (0, 255, 0))
             blue_resource_obj = ResourceNode(1920, 1080, 10, 10, (0, 0, 128))
-            self.resource_sprites.add(green_resource_obj)
-            self.resource_sprites.add(blue_resource_obj)
+            resource_sprites.add(green_resource_obj)
+            resource_sprites.add(blue_resource_obj)
 
     # SPAWN NEW TROOP
-    def createTroop(self):
-        new_troop = Infantry(10, 10, self.player.selected_building.x, self.player.selected_building.y, 5, (0, 0, 0), self.player)
-        troops_sprites.add(new_troop)
+    def createTroop(self, owner):
+        new_troop = Infantry(10, 10, self.player.selected_building.x, self.player.selected_building.y, 5, (0, 0, 0), owner)
+        all_troop_sprites.add(new_troop)
+
 
     # FIRE PROJECTILE FROM ALL SELECTED SPRITES
     def fireProj(self, proj_direction):
-        for sprite in troops_sprites:
-            new_proj = InfantryProjectile(sprite.rect.x, sprite.rect.y, 5, 5, proj_direction, 1, 100, (0,0,0))
+        for sprite in all_troop_sprites:
+            new_proj = InfantryProjectile(sprite.rect.x, sprite.rect.y, 5, 5, proj_direction, 2, 100, (0,0,0))
             projectiles.add(new_proj)
 
 
@@ -126,7 +127,7 @@ class MainRun(object):
             # CREATE NEW MAIN BUILDING TYPE
             elif button_id == 3:
                 new_building = MainBuilding(mouse_pos[0], mouse_pos[1], 50, 50, 1000, (123, 123, 123))
-                if new_building.checkForCollision(building_sprites, self.resource_sprites, self.building_menu_container_rect) == True:
+                if new_building.checkForCollision(building_sprites, resource_sprites, self.building_menu_container_rect) == True:
                     print("collides")
                 else:
                     building_sprites.add(new_building)
@@ -146,7 +147,7 @@ class MainRun(object):
                     pass
 
             # CHECK IF RESOURCE NODE IS CLICKED
-            for resource_node in self.resource_sprites: 
+            for resource_node in resource_sprites: 
                 if resource_node.rect.collidepoint(mouse_pos): 
                     if self.player.selected_menu_button is not None: # Check a selected button is not none 
                         placeBuilding(self.player.selected_menu_button.getButtonID(), resource_node.resource_type)
@@ -202,17 +203,17 @@ class MainRun(object):
                 if event.type == pygame.KEYDOWN:
                     if self.player.selected_building is not None: # Spawn troops if building is selected and "a" is pressed
                         if event.key == pygame.K_a:
-                            self.createTroop()
+                            self.createTroop(self.player)
                 
-                    self.player.selected_troop_group = troops_sprites # REMOVE THIS JUST FOR TESTING
-                    if self.player.selected_troop_group == troops_sprites:
+                    self.player.selected_troop_group = all_troop_sprites # REMOVE THIS JUST FOR TESTING
+                    if self.player.selected_troop_group == all_troop_sprites:
                         if event.key == pygame.K_SPACE:
                             target_pos = pygame.mouse.get_pos() 
                             [self.moving_troops.add(sprite) for sprite in self.player.selected_troop_group]
                     else:
                         pass
             
-            # MOVE PLACED TROOPS
+            # MOVE ALL SELECTED TROOPS
             if len(self.moving_troops) != 0:
                 self.moving_troops.update(target_pos)
                 self.moving_troops.draw(self.window_object)
@@ -227,10 +228,10 @@ class MainRun(object):
                 self.createBuildMenu()
                 self.firstRun = False
 
-            self.resource_sprites.draw(self.window_object)
+            resource_sprites.draw(self.window_object)
             self.building_menu_sprites.draw(self.window_object)
             building_sprites.draw(self.window_object)
-            troops_sprites.draw(self.window_object)
+            all_troop_sprites.draw(self.window_object)
                 
 
             pygame.display.flip()
@@ -239,7 +240,7 @@ class MainRun(object):
 
 
 if __name__ == "__main__":
-    MainRun(window_width, window_height, window_object)
+    mainrun = MainRun(window_width, window_height, window_object)
 
 
     

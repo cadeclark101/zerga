@@ -3,7 +3,7 @@ import pygame
 
 
 class Infantry(pygame.sprite.Sprite):
-    def __init__(self, w, h, x, y, health, colour, player):
+    def __init__(self, w, h, x, y, health, colour, owner):
         pygame.sprite.Sprite.__init__(self)
         self.health = health
         self.colour = colour
@@ -12,7 +12,7 @@ class Infantry(pygame.sprite.Sprite):
         self.w = w
         self.h = h
 
-        self.owner = player
+        self.owner = owner
         
         self.image = pygame.Surface([w,h])
         self.image.fill(colour)
