@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import pygame
 
 from Player import Player
+from DataHandling import DataHandling
 
 
 class Enemy(Player):
@@ -17,3 +18,7 @@ class Enemy(Player):
         self.owned_troops = pygame.sprite.Group()
         self.owned_buildings = pygame.sprite.Group()
 
+        self.data_obj = DataHandling()
+
+
+    

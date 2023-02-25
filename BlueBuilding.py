@@ -9,6 +9,7 @@ class BlueBuilding(pygame.sprite.Sprite):
         self.y = resource_node.y
         self.w = w
         self.h = h
+        
         self.owner = owner
 
         self.image = pygame.Surface([w,h])
