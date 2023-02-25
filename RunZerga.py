@@ -18,7 +18,7 @@ fps_clock = pygame.time.Clock()
 game_clock = pygame.time.Clock()
 framerate = 60
 
-
+all_sprites = pygame.sprite.Group()
 building_sprites = pygame.sprite.Group()
 all_troop_sprites = pygame.sprite.Group()
 projectiles = pygame.sprite.Group()
@@ -66,18 +66,22 @@ class MainRun(object):
     def createBuildMenu(self):
         blue_building_button_obj = MenuButton(1890, 0, 30, 30, 1, (0, 0, 0))
         self.building_menu_sprites.add(blue_building_button_obj)
+        all_sprites.add(blue_building_button_obj)
 
         green_building_button_obj = MenuButton(1890, 50, 30, 30, 2, (0, 0, 0))
         self.building_menu_sprites.add(green_building_button_obj)
+        all_sprites.add(green_building_button_obj)
 
         main_building_button_obj = MenuButton(1890, 100, 30, 30, 3, (0, 0, 0))
         self.building_menu_sprites.add(main_building_button_obj)
+        all_sprites.add(main_building_button_obj)
         pass
         
     # CREATE BUILDING TROOP MENU
     def createMainBuildingMenu(self):
         basic_troop_button_obj = MenuButton(960, 1050, 30, 30, 100, (0, 0, 0))
         self.selected_building_menu_sprites.add(basic_troop_button_obj)
+        all_sprites.add(basic_troop_button_obj)
         pass
 
     # CREATE RESOURCE NODE OBJECTS
@@ -87,12 +91,15 @@ class MainRun(object):
             blue_resource_obj = ResourceNode(1920, 1080, 10, 10, (0, 0, 128))
             resource_sprites.add(green_resource_obj)
             resource_sprites.add(blue_resource_obj)
+            all_sprites.add(green_resource_obj)
+            all_sprites.add(blue_resource_obj)
 
     # SPAWN NEW TROOP
     def createTroop(self, owner):
         new_troop = Infantry(10, 10, self.player.selected_building.x, self.player.selected_building.y, 5, (0, 0, 0), owner)
         owner.owned_troops.add(new_troop)
         all_troop_sprites.add(new_troop)
+        all_sprites.add(new_troop)
 
 
     # FIRE PROJECTILE FROM ALL SELECTED SPRITES
@@ -100,6 +107,7 @@ class MainRun(object):
         for sprite in all_troop_sprites:
             new_proj = InfantryProjectile(sprite.rect.x, sprite.rect.y, 5, 5, proj_direction, 2, 100, (0,0,0), self.window_object)
             projectiles.add(new_proj)
+            all_sprites.add(new_proj)
 
 
     def handleClickEvent(self, mouse_pos, click):
@@ -108,27 +116,32 @@ class MainRun(object):
             if button_id == 1 and resource_node.resource_type == 1:
                 new_building = GreenBuilding(20, 20, 500, (0, 255, 0), resource_node, owner) # Place green resource building
                 building_sprites.add(new_building)
+                all_sprites.add(new_building)
                 owner.owned_buildings.add(new_building)
+                resource_node.kill()
             else:
                 pass
 
             if button_id == 2 and resource_node.resource_type == 2:
                 new_building = BlueBuilding(20, 20, 500, (0, 0, 128), resource_node, owner) # Place blue resource building   
                 building_sprites.add(new_building)
+                all_sprites.add(new_building)
                 owner.owned_buildings.add(new_building)
+                resource_node.kill()
             else:
                 pass
 
             # CREATE NEW MAIN BUILDING TYPE
             if button_id == 3:
                 new_building = MainBuilding(mouse_pos[0], mouse_pos[1], 50, 50, 1000, (123, 123, 123), owner)
-                if new_building.checkForCollision(building_sprites, resource_sprites, self.building_menu_container_rect, self.selected_building_menu_container_rect) is True:
+                if new_building.checkForCollision(all_sprites, self.building_menu_container_rect, self.selected_building_menu_container_rect) is True:
                     print("Collides")
                 elif new_building.checkExists() is True:
                     print("Max building count reached")
                 else:
                     owner.owned_buildings.add(new_building)
                     building_sprites.add(new_building)
+                    all_sprites.add(new_building)
 
             else:
                 pass
@@ -202,7 +215,7 @@ class MainRun(object):
                         if event.key == pygame.K_a:
                             self.createTroop(self.player)
                 
-                    self.player.selected_troop_group = all_troop_sprites # REMOVE THIS JUST FOR TESTING
+                    self.player.selected_troop_group = all_troop_sprites # REMOVE THIS JUST FOR TESTING # REMOVE THIS JUST FOR TESTING # REMOVE THIS JUST FOR TESTING # REMOVE THIS JUST FOR TESTING
                     if self.player.selected_troop_group == all_troop_sprites:
                         if event.key == pygame.K_SPACE:
                             target_pos = pygame.mouse.get_pos() 
@@ -223,7 +236,7 @@ class MainRun(object):
 
             # MOVE ALL SELECTED TROOPS
             if len(self.moving_troops) != 0:
-                self.moving_troops.update(target_pos, self.moving_troops)
+                self.moving_troops.update(target_pos, self.moving_troops, all_sprites)
                 self.moving_troops.draw(self.window_object)
 
             # MOVE ALL PROJECTILES

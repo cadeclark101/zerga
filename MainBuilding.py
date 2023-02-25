@@ -21,7 +21,7 @@ class MainBuilding(pygame.sprite.Sprite):
         self.amount_allowed = 1
 
     # CHECK FOR NEW BUILDING COLLISION BEFORE PLACING
-    def checkForCollision(self, building_sprites, resource_sprites, building_menu_container_rect, selected_building_menu_container_rect):
+    def checkForCollision(self, all_sprites, building_menu_container_rect, selected_building_menu_container_rect):
         collides = False
 
         if self.rect.colliderect(building_menu_container_rect): # Check if building will collide with menu
@@ -30,14 +30,9 @@ class MainBuilding(pygame.sprite.Sprite):
         if self.rect.colliderect(selected_building_menu_container_rect): # Check if SELECTED building will collide with menu
             collides = True
 
-        if len(building_sprites) != 0: # Check if building will collide with existing buildings
-            for building_sprite in building_sprites:
-                if self.rect.colliderect(building_sprite.rect):
-                    collides = True
-
-        for resource_sprite in resource_sprites: # Check if new building will collide with any resource nodes
-            if self.rect.colliderect(resource_sprite.rect):
-                collides = True 
+        hits_any_sprites = pygame.sprite.spritecollide(self, all_sprites, False) # Check if sprite will collide with any sprite
+        if len(hits_any_sprites) > 0: 
+            collides = True
 
         return collides
 

@@ -2,6 +2,8 @@ import sys
 import pygame
 from pygame import gfxdraw
 
+from Player import Player
+
 
 class Infantry(pygame.sprite.Sprite):
     def __init__(self, w, h, x, y, health, colour, owner):
@@ -21,30 +23,61 @@ class Infantry(pygame.sprite.Sprite):
         self.rect.x = x
         self.rect.y = y
     
-    def update(self, target_pos, moving_troops):
-        if self.checkReachedTarget(target_pos) == False:
-            if target_pos[0] > self.rect.x:
-                self.rect.x += 1
-            elif target_pos[0] < self.rect.x:
-                self.rect.x -= 1
-            else:
-                pass
-            if target_pos[1] > self.rect.y:
-                self.rect.y += 1
-            elif target_pos[1] < self.rect.y:
-                self.rect.y -= 1
-            else:
-                pass
-        else:
-            print(len(moving_troops))
+    def update(self, target_pos, moving_troops, all_sprites):
+        if self.checkReachedTarget(target_pos) == True:
             moving_troops.remove(self)
-            print(len(moving_troops))
+
+
+        collided_sprite = self.checkForCollision(all_sprites)
+        if collided_sprite is not None:
+            pass
+            # WORKING HERE # WORKING HERE # WORKING HERE # WORKING HERE # WORKING HERE # WORKING HERE
+
+        else:
+            self.updateX(target_pos)
+            self.updateY(target_pos)
+
+
+    def updateX(self, target_pos):
+        if target_pos[0] > self.rect.x:
+            self.rect.x += 1
+        elif target_pos[0] < self.rect.x:
+            self.rect.x -= 1
+        else:
+            pass
+
+    def updateY(self, target_pos):
+        if target_pos[1] > self.rect.y:
+            self.rect.y += 1
+        elif target_pos[1] < self.rect.y:
+            self.rect.y -= 1
+        else:
+            pass
+
 
     def checkReachedTarget(self, target_pos):
         if target_pos[0] == self.rect.x and target_pos[1] == self.rect.y:
             return True
         else:
             return False
+
+
+    def checkForCollision(self, all_sprites):
+        hits_any_sprites = pygame.sprite.spritecollide(self, all_sprites, False) # Check if sprite will collide with any sprite
+        if len(hits_any_sprites) > 0:
+            for collided_sprite in hits_any_sprites:
+                if hasattr(collided_sprite, "owner") is True: # Check if sprite has an owner
+                    if isinstance(collided_sprite.owner, Player): # Check if owner is the player
+                        pass 
+                    else:
+                        return collided_sprite 
+                else:
+                    return collided_sprite
+        else:
+            collided_sprite = None
+            return collided_sprite
+
+
 
 class InfantryProjectile(pygame.sprite.Sprite):
     def __init__(self, x, y, w, h, target, speed, range, colour, window):
