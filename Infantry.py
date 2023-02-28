@@ -6,7 +6,7 @@ from Player import Player
 
 
 class Infantry(pygame.sprite.Sprite):
-    def __init__(self, w, h, x, y, health, colour, owner):
+    def __init__(self, w, h, x, y, health, colour, speed, owner, target):
         pygame.sprite.Sprite.__init__(self)
         self.health = health
         self.colour = colour
@@ -14,8 +14,9 @@ class Infantry(pygame.sprite.Sprite):
         self.y = y
         self.w = w
         self.h = h
-
+        self.speed = speed
         self.owner = owner
+        self.target = target
         
         self.image = pygame.Surface([w,h])
         self.image.fill(colour)
@@ -23,40 +24,42 @@ class Infantry(pygame.sprite.Sprite):
         self.rect.x = x
         self.rect.y = y
     
-    def update(self, target_pos, moving_troops, all_sprites):
-        if self.checkReachedTarget(target_pos) == True:
+    def update(self, moving_troops, all_sprites):
+        if self.checkReachedTarget() == True:
             moving_troops.remove(self)
-
 
         collided_sprite = self.checkForCollision(all_sprites)
         if collided_sprite is not None:
-            pass
-            # WORKING HERE # WORKING HERE # WORKING HERE # WORKING HERE # WORKING HERE # WORKING HERE
-
+            if self.rect.top <= collided_sprite.rect.bottom + (collided_sprite.rect.w / 2):
+                self.rect.x += self.speed
+                
+            if self.rect.left <= collided_sprite.rect.right + (collided_sprite.rect.h / 2):
+                self.rect.y += self.speed
+            
         else:
-            self.updateX(target_pos)
-            self.updateY(target_pos)
+            self.updateX()
+            self.updateY()
 
 
-    def updateX(self, target_pos):
-        if target_pos[0] > self.rect.x:
-            self.rect.x += 1
-        elif target_pos[0] < self.rect.x:
-            self.rect.x -= 1
-        else:
-            pass
-
-    def updateY(self, target_pos):
-        if target_pos[1] > self.rect.y:
-            self.rect.y += 1
-        elif target_pos[1] < self.rect.y:
-            self.rect.y -= 1
+    def updateX(self):
+        if self.target[0] > self.rect.x:
+            self.rect.x += self.speed
+        elif self.target[0] < self.rect.x:
+            self.rect.x -= self.speed
         else:
             pass
 
+    def updateY(self):
+        if self.target[1] > self.rect.y:
+            self.rect.y += self.speed
+        elif self.target[1] < self.rect.y:
+            self.rect.y -= self.speed
+        else:
+            pass
 
-    def checkReachedTarget(self, target_pos):
-        if target_pos[0] == self.rect.x and target_pos[1] == self.rect.y:
+
+    def checkReachedTarget(self):
+        if self.target[0] == self.rect.x and self.target[1] == self.rect.y:
             return True
         else:
             return False
@@ -119,16 +122,19 @@ class InfantryProjectile(pygame.sprite.Sprite):
             self.kill()
         
 
-    def checkReachedRange(self): 
-        if (self.rect.x == self.target[0]) and (self.rect.y == self.target[1]):
+    def checkReachedRange(self):
+        if (self.rect.x >= self.target[0]) and (self.rect.y >= self.target[1]):
             return True
-        elif (self.startX - self.rect.x == -abs(self.range)):
+        if (self.startX - self.rect.x <= -abs(self.range)):
+            print("1")
             return True
-        elif (self.startX - self.rect.x == self.range):
+        if (self.startX - self.rect.x >= self.range):
+            print("2")
             return True
-        elif (self.startY - self.rect.y == -abs(self.range)):
+        if (self.startY - self.rect.y <= -abs(self.range)):
+            print("3")
             return True
-        elif (self.startY - self.rect.y == self.range):
+        if (self.startY - self.rect.y >= self.range):
+            print("4")
             return True
-        else:
-            return False
+        return False

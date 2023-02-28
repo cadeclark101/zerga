@@ -1,3 +1,4 @@
+from queue import Queue
 from threading import Thread, Timer
 from profilehooks import profile
 import numpy as np
@@ -11,12 +12,15 @@ from GreenBuilding import *
 from BlueBuilding import *
 from MainBuilding import *
 from Infantry import *
+from Utils import roundCoords
 
 pygame.init()
 
 fps_clock = pygame.time.Clock()
 game_clock = pygame.time.Clock()
 framerate = 60
+
+threads = []
 
 all_sprites = pygame.sprite.Group()
 building_sprites = pygame.sprite.Group()
@@ -96,18 +100,19 @@ class MainRun(object):
 
     # SPAWN NEW TROOP
     def createTroop(self, owner):
-        new_troop = Infantry(10, 10, self.player.selected_building.x, self.player.selected_building.y, 5, (0, 0, 0), owner)
+        new_troop = Infantry(10, 10, self.player.selected_building.x, self.player.selected_building.y, 5, (0, 0, 0), 1, owner, None)
         owner.owned_troops.add(new_troop)
         all_troop_sprites.add(new_troop)
         all_sprites.add(new_troop)
 
 
     # FIRE PROJECTILE FROM ALL SELECTED SPRITES
-    def fireProj(self, proj_direction):
+    def fireProj(self):
         for sprite in all_troop_sprites:
-            new_proj = InfantryProjectile(sprite.rect.x, sprite.rect.y, 5, 5, proj_direction, 2, 100, (0,0,0), self.window_object)
+            proj_target = roundCoords(pygame.mouse.get_pos(), 3)
+            print(proj_target)
+            new_proj = InfantryProjectile(sprite.rect.x, sprite.rect.y, 5, 5, proj_target, 4, 100, (0,0,0), self.window_object)
             projectiles.add(new_proj)
-            all_sprites.add(new_proj)
 
 
     def handleClickEvent(self, mouse_pos, click):
@@ -183,9 +188,8 @@ class MainRun(object):
 
         # CHECK FOR MIDDLE MOUSE CLICK
         if click == (False, True, False):
-            proj_direction = pygame.mouse.get_pos()
             if self.player.selected_troop_group != None:
-                self.fireProj(proj_direction)
+                self.fireProj()
 
         # CLEAR CURSOR ON RIGHT CLICK             
         if click == (False, False, True): 
@@ -209,6 +213,8 @@ class MainRun(object):
                     mouse_pos = pygame.mouse.get_pos()
                     self.handleClickEvent(mouse_pos, click)
 
+
+
                 # CHECK FOR KEYBOARD EVENTS
                 if event.type == pygame.KEYDOWN:
                     if self.player.selected_building is not None: # Spawn troops if building is selected and "a" is pressed
@@ -218,11 +224,15 @@ class MainRun(object):
                     self.player.selected_troop_group = all_troop_sprites # REMOVE THIS JUST FOR TESTING # REMOVE THIS JUST FOR TESTING # REMOVE THIS JUST FOR TESTING # REMOVE THIS JUST FOR TESTING
                     if self.player.selected_troop_group == all_troop_sprites:
                         if event.key == pygame.K_SPACE:
-                            target_pos = pygame.mouse.get_pos() 
-                            [self.moving_troops.add(sprite) for sprite in self.player.selected_troop_group]
+                            target_pos = pygame.mouse.get_pos()
+                            for sprite in self.player.selected_troop_group:
+                                sprite.target = target_pos
+                                self.moving_troops.add(sprite)
                     else:
                         pass
             
+
+
             # FIRST RUN STUFF
             if self.firstRun == True:
                 # SET TIMERS FOR ENEMY, PLAYER AND GAME TIMER
@@ -232,16 +242,26 @@ class MainRun(object):
                 # CREATE FIRST TIME RESOURCE NODES AND MENU NODES
                 self.createResourceNodes()
                 self.createBuildMenu()
+
+                # CREATE AND START DATA GATHERING THREAD
+                q = Queue()
+                threads.append(DataHandling(q))
+                threads[0].start()
+
                 self.firstRun = False
+
+
 
             # MOVE ALL SELECTED TROOPS
             if len(self.moving_troops) != 0:
-                self.moving_troops.update(target_pos, self.moving_troops, all_sprites)
+                self.moving_troops.update(self.moving_troops, all_sprites)
                 self.moving_troops.draw(self.window_object)
 
             # MOVE ALL PROJECTILES
             projectiles.update()
         
+
+
             # DRAW ALL SPRITES AND MENUS
             self.drawOverlay()
             projectiles.draw(self.window_object)
@@ -252,13 +272,47 @@ class MainRun(object):
             building_sprites.draw(self.window_object)
             all_troop_sprites.draw(self.window_object)
 
-            # UPDATE TIMERS
-            timer_for_enemy_action += game_clock.tick()
-            timer_for_player_action += game_clock.tick()
-            game_timer += game_clock.tick()
 
-            pygame.display.flip()
+
+            # ENEMY ACTIONS
+            if timer_for_enemy_action >= 5000:
+                timer_for_enemy_action = 0
+
+            # PLACE MAIN BUILDING
+                if self.enemy.first_turn == True:
+                    new_building = MainBuilding(self.enemy.getRandomCoord(self.window_width), self.enemy.getRandomCoord(self.window_height), 50, 50, 500, (255, 0, 0), self.enemy)
+                    self.enemy.owned_buildings.add(new_building)
+                    all_sprites.add(new_building)
+                    building_sprites.add(new_building)
+            else:
+                pass
+
+            # DATA GATHERING
+            if game_timer >= 5000:
+                game_timer = 0
+                
+                # Prepare data to be sent to thread
+                kwargs = {
+                        "0":str(self.player.green_resource_income), "1":str(self.enemy.green_resource_income), 
+                        "0":str(self.player.blue_resource_income), "0":str(self.enemy.blue_resource_income),
+                        "0":str(self.player.green_resource), "0":str(self.enemy.green_resource),
+                        "0":str(self.player.blue_resource), "0":str(self.enemy.blue_resource),
+                        "0":str(len(self.player.owned_troops)), "0":str(len(self.enemy.owned_troops)),
+                        "0":str(len(self.player.owned_buildings)), "0":str(len(self.enemy.owned_buildings)),
+                        }
+                threads[0].addData(abs(1), **kwargs)            # Send data to thread
+            else:
+                pass
+
+            # UPDATE TIMERS
+            timer_for_enemy_action += game_clock.get_time()
+            timer_for_player_action += game_clock.get_time()
+            game_timer += game_clock.get_time()
+
+
+            pygame.display.update()
             fps_clock.tick(framerate)
+            game_clock.tick()
         pygame.quit()
 
 

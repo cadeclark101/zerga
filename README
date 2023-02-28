@@ -4,21 +4,24 @@ Right now this game is just bare bones with no graphics. I am mostly just settin
 
 How to "play":
 - TOP RIGHT MENU:
-    1. GREEN RESOURCE BUILDING
-    2. BLUE RESOURCE BUILDING
-    3. MAIN BUILDING
+    1. GREEN RESOURCE BUILDING.
+    2. BLUE RESOURCE BUILDING.
+    3. MAIN BUILDING.
         a. Click the placed building.
         b. Press "A" on the keyboard to spawn a troop.
         c. Once spawned, middle mouse to fire a projectile.
         d. "SPACE" button will make troops move to cursor.
 
 Things you can do:
-- Claim resource nodes
-- Place your main building
-    - Spawn basic troops
-    - Move that troop
-        - Troops cannot move through enemy buildings or unclaimed resource nodes
-    - Make that troop shoot
+- Claim resource nodes.
+- Place your main building.
+    - Spawn basic troops.
+    - Move that troop.
+        - Troops cannot move through enemy buildings or unclaimed resource nodes.
+    - Make that troop shoot.
+
+Things the enemy can do:
+- Place its own main building.
 
 
 TODO:
