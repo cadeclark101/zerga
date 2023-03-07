@@ -1,16 +1,9 @@
 import Player
-import DataHandling
-import pandas
-from sklearn import tree
-from sklearn.tree import DecisionTreeClassifier
-import matplotlib.pyplot as plt
-
 import random
 
 import pygame
 
 from Player import Player
-from DataHandling import DataHandling
 
 
 class Enemy(Player):
@@ -20,11 +13,11 @@ class Enemy(Player):
         self.owned_troops = pygame.sprite.Group()
         self.owned_buildings = pygame.sprite.Group()
 
-        self.first_turn = self.firstTurn()
+        self.data = None
 
 
     def firstTurn(self):
-        if len(self.owned_buildings) == 0:
+        if len(self.owned_buildings) > 0:
             return True
         else:
             return False

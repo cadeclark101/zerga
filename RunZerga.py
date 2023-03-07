@@ -12,6 +12,7 @@ from GreenBuilding import *
 from BlueBuilding import *
 from MainBuilding import *
 from Infantry import *
+from DataHandling import DataHandling
 from Utils import roundCoords
 
 pygame.init()
@@ -278,29 +279,24 @@ class MainRun(object):
             if timer_for_enemy_action >= 5000:
                 timer_for_enemy_action = 0
 
-            # PLACE MAIN BUILDING
-                if self.enemy.first_turn == True:
+                # PLACE MAIN BUILDING
+                if self.enemy.firstTurn() == False:
                     new_building = MainBuilding(self.enemy.getRandomCoord(self.window_width), self.enemy.getRandomCoord(self.window_height), 50, 50, 500, (255, 0, 0), self.enemy)
                     self.enemy.owned_buildings.add(new_building)
                     all_sprites.add(new_building)
                     building_sprites.add(new_building)
-            else:
-                pass
+
+                # CLAIM RESOURCE NODE
+                    
 
             # DATA GATHERING
-            if game_timer >= 5000:
+            if game_timer >= 2000:
                 game_timer = 0
                 
-                # Prepare data to be sent to thread
-                kwargs = {
-                        "0":str(self.player.green_resource_income), "1":str(self.enemy.green_resource_income), 
-                        "0":str(self.player.blue_resource_income), "0":str(self.enemy.blue_resource_income),
-                        "0":str(self.player.green_resource), "0":str(self.enemy.green_resource),
-                        "0":str(self.player.blue_resource), "0":str(self.enemy.blue_resource),
-                        "0":str(len(self.player.owned_troops)), "0":str(len(self.enemy.owned_troops)),
-                        "0":str(len(self.player.owned_buildings)), "0":str(len(self.enemy.owned_buildings)),
-                        }
-                threads[0].addData(abs(1), **kwargs)            # Send data to thread
+                threads[0].createDataset()
+                new_data = {"green_resource_income":[1], "blue_resource_income":[1], "green_resource":[1], "blue_resource":[1], "troop_count":[1], "building_count":[1], "previous_move_id":[1], "predicted_next_move_id":[1]}
+                threads[0].updateDataset(new_data)
+                print(threads[0].getData())
             else:
                 pass
 
