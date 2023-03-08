@@ -1,17 +1,16 @@
 from queue import Queue
 from threading import Thread, Timer
 from profilehooks import profile
-import numpy as np
 import pygame
 
 from Enemy import *
 from ResourceNode import *
 from Player import *
 from MenuButton import *
-from GreenBuilding import *
+from Building import *
 from BlueBuilding import *
-from MainBuilding import *
-from Infantry import *
+from GreenBuilding import *
+from Troop import *
 from DataHandling import DataHandling
 from Utils import roundCoords
 
@@ -101,7 +100,7 @@ class MainRun(object):
 
     # SPAWN NEW TROOP
     def createTroop(self, owner):
-        new_troop = Infantry(10, 10, self.player.selected_building.x, self.player.selected_building.y, 5, (0, 0, 0), 1, owner, None)
+        new_troop = BasicTroop(10, 10, self.player.selected_building.x, self.player.selected_building.y, 5, (0, 0, 0), 1, owner, None)
         owner.owned_troops.add(new_troop)
         all_troop_sprites.add(new_troop)
         all_sprites.add(new_troop)
@@ -110,9 +109,9 @@ class MainRun(object):
     # FIRE PROJECTILE FROM ALL SELECTED SPRITES
     def fireProj(self):
         for sprite in all_troop_sprites:
-            proj_target = roundCoords(pygame.mouse.get_pos(), 3)
+            proj_target = pygame.mouse.get_pos()
             print(proj_target)
-            new_proj = InfantryProjectile(sprite.rect.x, sprite.rect.y, 5, 5, proj_target, 4, 100, (0,0,0), self.window_object)
+            new_proj = Projectile(sprite.rect.x, sprite.rect.y, 5, 5, proj_target, 4, 100, (0,0,0), self.window_object)
             projectiles.add(new_proj)
 
 
@@ -188,14 +187,14 @@ class MainRun(object):
                     placeBuilding(self.player.selected_menu_button.getButtonID(), None, self.player)
 
         # CHECK FOR MIDDLE MOUSE CLICK
-        if click == (False, True, False):
+        if click == (False, False, True):
             if self.player.selected_troop_group != None:
                 self.fireProj()
 
         # CLEAR CURSOR ON RIGHT CLICK             
-        if click == (False, False, True): 
-            self.player.selected_menu_button = None
-            print("cleared cursor")
+        #if click == (False, False, True): 
+         #   self.player.selected_menu_button = None
+          #  print("cleared cursor")
 
                                     
             
@@ -294,7 +293,7 @@ class MainRun(object):
                 game_timer = 0
                 
                 threads[0].createDataset()
-                new_data = {"green_resource_income":[1], "blue_resource_income":[1], "green_resource":[1], "blue_resource":[1], "troop_count":[1], "building_count":[1], "previous_move_id":[1], "predicted_next_move_id":[1]}
+                new_data = (("green_resource_income", 1), ("blue_resource_income", 2), ("green_resource", 3), ("blue_resource", 4), ("troop_count", 5), ("building_count", 6), ("previous_move_id", 7), ("predicted_next_move_id", 8))
                 threads[0].updateDataset(new_data)
                 print(threads[0].getData())
             else:

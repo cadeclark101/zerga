@@ -16,9 +16,8 @@ class DataHandling(threading.Thread):
         self.daemon = True
         
     def updateDataset(self, new_data):
-        for col in new_data.items():
-            if col[0] in self.dataset_list:
-                self.dataset_list[col[0]].append(col[1])
+        for col in new_data:
+            self.dataset_list[col[0]].append(col[1])
         self.createDataset()
 
     def createDataset(self):
