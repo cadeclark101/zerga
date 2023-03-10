@@ -112,6 +112,16 @@ class SniperTroop(Troop):
             self.updateX()
             self.updateY()
 
+class MortarTroop(Troop):
+    def __init__(self, w, h, x, y, health, colour, speed, owner, target):
+        super().__init__(w, h, x, y, health, colour, speed, owner, target)
+        self.image = pygame.Surface([w,h])
+        self.image.fill(colour)
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+
+
 
 class Projectile(pygame.sprite.Sprite):
     def __init__(self, x, y, w, h, target, speed, range, colour, window):
@@ -170,3 +180,23 @@ class Projectile(pygame.sprite.Sprite):
         if (self.range_ticker >= self.range):
             return True
         return False
+    
+# Projectile for the mortar troop
+# Has a slow speed because it will have a big explosion
+class MortarProjecile(Projectile):
+    def __init__(self, x, y, w, h, target, speed, range, colour, window):
+        super().__init__(self, x, y, w, h, target, speed, range, colour, window)
+
+        self.image = pygame.Surface([w,h])
+        self.image.fill(colour)
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+
+    def update(self):
+        if self.checkReachedRange() == True:
+            pygame.gfxdraw.circle(self.window, self.rect.x, self.rect.y, self.w*6, (255,0,0))
+            self.kill()
+        else:
+            self.updateX()
+            self.updateY()
