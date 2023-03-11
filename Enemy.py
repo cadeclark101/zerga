@@ -13,6 +13,10 @@ class Enemy(Player):
         self.owned_troops = pygame.sprite.Group()
         self.owned_buildings = pygame.sprite.Group()
 
+        self.basic_troops = pygame.sprite.Group()
+        self.sniper_troops = pygame.sprite.Group()
+        self.mortar_troops = pygame.sprite.Group()
+
         self.data = None
 
 
