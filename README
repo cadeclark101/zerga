@@ -1,6 +1,6 @@
-Clone the repo, make sure you have pygame installed and then run "RunZerga.py". 
+Clone the repo, make sure you have pygame installed and then run "RunZerga.py". Install all requirements.
 
-Right now this game is just bare bones with no graphics. I am mostly just setting up the menu and controls.
+Right now this game is just bare bones with no graphics. 
 
 How to "play":
 - TOP RIGHT MENU:
@@ -8,26 +8,41 @@ How to "play":
     2. BLUE RESOURCE BUILDING.
     3. MAIN BUILDING.
         a. Click the placed building.
-        b. Press "A" on the keyboard to spawn a troop.
-            i) Once spawned, middle mouse to fire a projectile.
-            ii) "SPACE" button will make troops move to cursor.
-            iii) Right click to make that troop shoot a projectile.
+        b. Press "A" on the keyboard to spawn a basic troop.
+    4. TROOP SPAWNER.
+        a. Click the placed building.
+        b. Press "A" on the keyboard to spawn a sniper troop.
+        c. Press "S" on the keyboard to spawn a mortar troop.
+
+- TROOP CONTROLS:
+    1. Press "SPACE" to move spawned troops to cursor location.
+    2. Right click to make troops shoot.
 
 
 Things you can do:
 - Claim resource nodes.
 - Place your main building.
     - Spawn basic troops.
-    - Move that troop.
-        - Troops cannot move through enemy buildings or unclaimed resource nodes.
-    - Make that troop shoot.
+- Place your troop spawner.
+    - Spawn sniper troops.
+    - Spawn mortar troops.
+
+    - Move troops.
+        - Troops (bar the sniper troop) cannot move through enemy buildings or unclaimed resource nodes.
+    - Make troops shoot.
 
 Things the enemy can do:
 - Place its own main building.
 
 
 TODO:
-- Add data gathering from USER EVENTS.
-- Create a decision tree.
-- Train decision tree every n seconds.
-- Make the enemy make moves based on the decision tree.
+1. ENEMY AND ITS ASSOCIATED AI:
+    - Add data gathering from USER EVENTS.
+    - Train decision tree every n seconds.
+    - Make the enemy make moves based on the decision tree.
+2. GENERAL GAMEPLAY:
+    - Implement different projectiles.
+    - Make selected troops auto shoot nearby enemies.
+    - Add give/recieve damage. 
+    - Implemennt restrictions to spawning based on resources.
+3. Many many many minor things!
