@@ -79,14 +79,27 @@ class MainRun(object):
         main_building_button_obj = MenuButton(1890, 100, 30, 30, 3, (0, 0, 0))
         self.building_menu_sprites.add(main_building_button_obj)
         all_sprites.add(main_building_button_obj)
+
+        troop_spawner_building_button_obj = MenuButton(1890, 150, 30, 30, 4, (0,0,0))
+        self.building_menu_sprites.add(troop_spawner_building_button_obj)
+        all_sprites.add(troop_spawner_building_button_obj)
         pass
         
     # CREATE BUILDING TROOP MENU
     def createMainBuildingMenu(self):
-        basic_troop_button_obj = MenuButton(960, 1050, 30, 30, 100, (0, 0, 0))
+        basic_troop_button_obj = MenuButton(960, 1050, 30, 30, 4, (0, 0, 0))
         self.selected_building_menu_sprites.add(basic_troop_button_obj)
         all_sprites.add(basic_troop_button_obj)
         pass
+
+    def createTroopSpawnerMenu(self):
+        sniper_troop_button_obj = MenuButton(960, 1050, 30, 30, 5, (100, 0, 100))
+        self.selected_building_menu_sprites.add(sniper_troop_button_obj)
+        all_sprites.add(sniper_troop_button_obj)
+
+        mortar_troop_button_obj = MenuButton(920, 1050, 30, 30, 6, (100, 0, 100))
+        self.selected_building_menu_sprites.add(mortar_troop_button_obj)
+        all_sprites.add(sniper_troop_button_obj)
 
     # CREATE RESOURCE NODE OBJECTS
     def createResourceNodes(self):
@@ -99,12 +112,23 @@ class MainRun(object):
             all_sprites.add(blue_resource_obj)
 
     # SPAWN NEW TROOP
-    def createTroop(self, owner):
-        new_troop = BasicTroop(10, 10, self.player.selected_building.x, self.player.selected_building.y, 5, (0, 0, 0), 1, owner, None)
-        owner.owned_troops.add(new_troop)
-        all_troop_sprites.add(new_troop)
-        all_sprites.add(new_troop)
+    def createTroop(self, owner, troop_type_id):
+        def addNewTroop(owner, new_troop):
+            owner.owned_troops.add(new_troop)
+            all_troop_sprites.add(new_troop)
+            all_sprites.add(new_troop)
 
+        if troop_type_id == 1: 
+            new_troop = BasicTroop(10, 10, self.player.selected_building.x, self.player.selected_building.y, 10, (0, 0, 0), 4, owner, None, 1)
+            addNewTroop(owner, new_troop)
+        if troop_type_id == 2: 
+            new_troop = SniperTroop(5, 5, self.player.selected_building.x, self.player.selected_building.y, 5, (3, 200, 100), 2, owner, None, 2)
+            addNewTroop(owner, new_troop)
+        if troop_type_id == 3: 
+            new_troop = MortarTroop(15, 15, self.player.selected_building.x, self.player.selected_building.y, 20, (20, 30, 60), 1, owner, None, 3)
+            addNewTroop(owner, new_troop)
+
+        
 
     # FIRE PROJECTILE FROM ALL SELECTED SPRITES
     def fireProj(self):
@@ -148,6 +172,16 @@ class MainRun(object):
                     building_sprites.add(new_building)
                     all_sprites.add(new_building)
 
+            # CREATE NEW TROOP SPAWNER TYPE
+            if button_id == 4:
+                new_building = TroopSpawner(mouse_pos[0], mouse_pos[1], 25, 25, 250, (0, 20, 255), owner)
+                if new_building.checkForCollision(all_sprites, self.building_menu_container_rect, self.selected_building_menu_container_rect) is True:
+                    print("Collides")
+                else:
+                    owner.owned_buildings.add(new_building)
+                    building_sprites.add(new_building)
+                    all_sprites.add(new_building)
+
             else:
                 pass
 
@@ -167,9 +201,9 @@ class MainRun(object):
                 if resource_node.rect.collidepoint(mouse_pos): 
                     if self.player.selected_menu_button is not None: # Check a selected button is not none 
                         placeBuilding(self.player.selected_menu_button.getButtonID(), resource_node, self.player)
+                        break
                     else:
-                        print("no building selected")
-                        break 
+                        pass 
                 else:
                     pass
 
@@ -177,16 +211,24 @@ class MainRun(object):
             for building_sprite in building_sprites:
                 if building_sprite.rect.collidepoint(mouse_pos):
                     self.player.selected_menu_button = None
-                    self.player.selected_building = building_sprite
-                    self.createMainBuildingMenu()
+                    if isinstance(building_sprite, MainBuilding): # Check if main building is clicked
+                        self.player.selected_building = building_sprite
+                        self.createMainBuildingMenu()
+                    if isinstance(building_sprite, TroopSpawner): # Check if troopspawner is clicked
+                        self.player.selected_building = building_sprite
+                        self.createTroopSpawnerMenu()
                     
 
             # CHECK IF ANYWHERE NOT OCCUPIED BY MENU OR RESOURCE IS CLICKED
             if self.player.selected_menu_button is not None:
                 if self.player.selected_menu_button.getButtonID() == 3:
                     placeBuilding(self.player.selected_menu_button.getButtonID(), None, self.player)
+                if self.player.selected_menu_button.getButtonID() == 4:
+                    placeBuilding(self.player.selected_menu_button.getButtonID(), None, self.player)
 
-        # CHECK FOR MIDDLE MOUSE CLICK
+        # CHECK FOR MIDDLE MOUSE CLICK 
+        # CURRENTLY SET TO RIGHT CLICK BECAUSE IM ON MY LAPTOP
+        # TODO: CHANGE TO AUTO FIRING AT CLOSEST TARGET
         if click == (False, False, True):
             if self.player.selected_troop_group != None:
                 self.fireProj()
@@ -217,9 +259,15 @@ class MainRun(object):
 
                 # CHECK FOR KEYBOARD EVENTS
                 if event.type == pygame.KEYDOWN:
-                    if self.player.selected_building is not None: # Spawn troops if building is selected and "a" is pressed
-                        if event.key == pygame.K_a:
-                            self.createTroop(self.player)
+                    if self.player.selected_building is not None: 
+                        if isinstance(self.player.selected_building, MainBuilding): # Check if clicked rect is MainBuilding
+                            if event.key == pygame.K_a:
+                                self.createTroop(self.player, 1) # Spawn basic troop
+                        if isinstance(self.player.selected_building, TroopSpawner): # Check if clicked rect is TroopSpawner
+                            if event.key == pygame.K_a:
+                                self.createTroop(self.player, 2) # Spawn sniper troop
+                            elif event.key == pygame.K_s:
+                                self.createTroop(self.player, 3) # Spawn mortar troop
                 
                     self.player.selected_troop_group = all_troop_sprites # REMOVE THIS JUST FOR TESTING # REMOVE THIS JUST FOR TESTING # REMOVE THIS JUST FOR TESTING # REMOVE THIS JUST FOR TESTING
                     if self.player.selected_troop_group == all_troop_sprites:
@@ -295,7 +343,6 @@ class MainRun(object):
                 threads[0].createDataset()
                 new_data = (("green_resource_income", 1), ("blue_resource_income", 2), ("green_resource", 3), ("blue_resource", 4), ("troop_count", 5), ("building_count", 6), ("previous_move_id", 7), ("predicted_next_move_id", 8))
                 threads[0].updateDataset(new_data)
-                print(threads[0].getData())
             else:
                 pass
 

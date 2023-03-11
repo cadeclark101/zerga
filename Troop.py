@@ -5,7 +5,7 @@ from Player import Player
 
 
 class Troop(pygame.sprite.Sprite):
-    def __init__(self, w, h, x, y, health, colour, speed, owner, target):
+    def __init__(self, w, h, x, y, health, colour, speed, owner, target, troop_type_id):
         pygame.sprite.Sprite.__init__(self)
         self.health = health
         self.colour = colour
@@ -16,6 +16,7 @@ class Troop(pygame.sprite.Sprite):
         self.speed = speed
         self.owner = owner
         self.target = target
+        self.troop_type_id = troop_type_id
         
     
     def update(self, moving_troops, all_sprites):
@@ -73,10 +74,13 @@ class Troop(pygame.sprite.Sprite):
         else:
             collided_sprite = None
             return collided_sprite
+        
+    def getTroopTypeID(self):
+        return self.troop_type_id
 
 class BasicTroop(Troop):
-    def __init__(self, w, h, x, y, health, colour, speed, owner, target):
-        super().__init__(w, h, x, y, health, colour, speed, owner, target)
+    def __init__(self, w, h, x, y, health, colour, speed, owner, target, troop_type_id):
+        super().__init__(w, h, x, y, health, colour, speed, owner, target, troop_type_id)
 
         self.image = pygame.Surface([w,h])
         self.image.fill(colour)
@@ -87,8 +91,11 @@ class BasicTroop(Troop):
 
 
 class SniperTroop(Troop):
-    def __init__(self, w, h, x, y, health, colour, speed, owner, target):
-        super().__init__(w, h, x, y, health, colour, speed, owner, target)
+    def __init__(self, w, h, x, y, health, colour, speed, owner, target, troop_type_id):
+        super().__init__(w, h, x, y, health, colour, speed, owner, target, troop_type_id)
+
+        self.troop_type_id = 2
+
         self.starting_speed = speed
 
         self.image = pygame.Surface([w,h])
@@ -113,8 +120,11 @@ class SniperTroop(Troop):
             self.updateY()
 
 class MortarTroop(Troop):
-    def __init__(self, w, h, x, y, health, colour, speed, owner, target):
-        super().__init__(w, h, x, y, health, colour, speed, owner, target)
+    def __init__(self, w, h, x, y, health, colour, speed, owner, target, troop_type_id):
+        super().__init__(w, h, x, y, health, colour, speed, owner, target, troop_type_id)
+
+        self.troop_type_id = 3
+
         self.image = pygame.Surface([w,h])
         self.image.fill(colour)
         self.rect = self.image.get_rect()
