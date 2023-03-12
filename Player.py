@@ -30,3 +30,10 @@ class Player(object):
     def incomeTicker(self):
         self.green_resource += self.green_resource_income
         self.blue_resource += self.blue_resource_income
+
+    def getOwnedTroops(self):
+        return self.owned_troops
+    
+    def getOwnedBuildings(self):
+        return self.owned_buildings
+    

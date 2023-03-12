@@ -5,18 +5,23 @@ from Player import Player
 
 
 class Troop(pygame.sprite.Sprite):
-    def __init__(self, w, h, x, y, health, colour, speed, owner, target, troop_type_id):
+    def __init__(self, w, h, x, y, health, colour, speed, owner, enemy, target, range, attack_target=None):
         pygame.sprite.Sprite.__init__(self)
-        self.health = health
-        self.colour = colour
         self.x = x
         self.y = y
         self.w = w
         self.h = h
+
+        self.health = health
+        self.colour = colour
         self.speed = speed
         self.owner = owner
-        self.target = target
-        self.troop_type_id = troop_type_id
+        self.enemy = enemy
+        self.movement_target = target
+        self.range = range
+        self.attack_target = attack_target
+
+        self.range_rect = pygame.Rect(self.x, self.y, self.range, self.range)
         
     
     def update(self, moving_troops, all_sprites):
@@ -35,26 +40,32 @@ class Troop(pygame.sprite.Sprite):
             self.updateX()
             self.updateY()
 
+        self.getSpritesInRange()
+
 
     def updateX(self):
-        if self.target[0] > self.rect.x:
+        if self.movement_target[0] > self.rect.x:
             self.rect.x += self.speed
-        elif self.target[0] < self.rect.x:
+            self.range_rect.x += self.speed
+        elif self.movement_target[0] < self.rect.x:
             self.rect.x -= self.speed
+            self.range_rect.x -= self.speed
         else:
             pass
 
     def updateY(self):
-        if self.target[1] > self.rect.y:
+        if self.movement_target[1] > self.rect.y:
             self.rect.y += self.speed
-        elif self.target[1] < self.rect.y:
+            self.range_rect.y += self.speed
+        elif self.movement_target[1] < self.rect.y:
             self.rect.y -= self.speed
+            self.range_rect.y -= self.speed
         else:
             pass
 
 
     def checkReachedTarget(self):
-        if self.target[0] == self.rect.x and self.target[1] == self.rect.y:
+        if self.movement_target[0] == self.rect.x and self.movement_target[1] == self.rect.y:
             return True
         else:
             return False
@@ -77,10 +88,20 @@ class Troop(pygame.sprite.Sprite):
         
     def getTroopTypeID(self):
         return self.troop_type_id
+    
+    def getSpritesInRange(self):
+        enemy_buildings = self.enemy.getOwnedBuildings()
+        enemy_sprites_in_range = self.range_rect.collidelistall(list(enemy_buildings))
+        if len(enemy_sprites_in_range) != 0:
+            self.attack_target = enemy_buildings[0] # select first sprite in range as target for projectiles
+        else:
+            pass  
+
 
 class BasicTroop(Troop):
-    def __init__(self, w, h, x, y, health, colour, speed, owner, target, troop_type_id):
-        super().__init__(w, h, x, y, health, colour, speed, owner, target, troop_type_id)
+    def __init__(self, w, h, x, y, health, colour, speed, owner, enemy, target, range, attack_target):
+        super().__init__(w, h, x, y, health, colour, speed, owner, enemy, target, range, attack_target)
+        self.troop_type_id = 1
 
         self.image = pygame.Surface([w,h])
         self.image.fill(colour)
@@ -90,9 +111,10 @@ class BasicTroop(Troop):
 
 
 
+
 class SniperTroop(Troop):
-    def __init__(self, w, h, x, y, health, colour, speed, owner, target, troop_type_id):
-        super().__init__(w, h, x, y, health, colour, speed, owner, target, troop_type_id)
+    def __init__(self, w, h, x, y, health, colour, speed, owner, enemy, target, range, attack_target):
+        super().__init__(w, h, x, y, health, colour, speed, owner, enemy, target, range, attack_target)
 
         self.troop_type_id = 2
 
@@ -103,6 +125,7 @@ class SniperTroop(Troop):
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
+
 
     # OVERRIDES TROOP UPDATE CLASS 
     # Snipers can move through objects at 1/2 usual speed
@@ -120,8 +143,8 @@ class SniperTroop(Troop):
             self.updateY()
 
 class MortarTroop(Troop):
-    def __init__(self, w, h, x, y, health, colour, speed, owner, target, troop_type_id):
-        super().__init__(w, h, x, y, health, colour, speed, owner, target, troop_type_id)
+    def __init__(self, w, h, x, y, health, colour, speed, owner, enemy, target, range, attack_target):
+        super().__init__(w, h, x, y, health, colour, speed, owner, enemy, target, range, attack_target)
 
         self.troop_type_id = 3
 
@@ -140,7 +163,7 @@ class Projectile(pygame.sprite.Sprite):
         self.h = h
         self.startX = x
         self.startY = y
-        self.target = target
+        self.movement_target = target
         self.speed = speed
         self.range = range
         self.range_ticker = 0
@@ -164,20 +187,20 @@ class Projectile(pygame.sprite.Sprite):
 
 
     def updateX(self):
-        if self.target[0] > self.rect.x:
+        if self.movement_target[0] > self.rect.x:
             self.rect.x += self.speed
             self.range_ticker += self.speed
-        elif self.target[0] < self.rect.x:
+        elif self.movement_target[0] < self.rect.x:
             self.rect.x -= self.speed
             self.range_ticker += self.speed
         else:
             pass
 
     def updateY(self):
-        if self.target[1] > self.rect.y:
+        if self.movement_target[1] > self.rect.y:
             self.rect.y += self.speed
             self.range_ticker += self.speed
-        elif self.target[1] < self.rect.y:
+        elif self.movement_target[1] < self.rect.y:
             self.rect.y -= self.speed
             self.range_ticker += self.speed
         else:
@@ -185,28 +208,9 @@ class Projectile(pygame.sprite.Sprite):
         
 
     def checkReachedRange(self):
-        if (self.rect.x == self.target[0]) and (self.rect.y == self.target[1]):
+        if (self.rect.x == self.movement_target[0]) and (self.rect.y == self.movement_target[1]):
             return True
         if (self.range_ticker >= self.range):
             return True
         return False
     
-# Projectile for the mortar troop
-# Has a slow speed because it will have a big explosion
-class MortarProjecile(Projectile):
-    def __init__(self, x, y, w, h, target, speed, range, colour, window):
-        super().__init__(self, x, y, w, h, target, speed, range, colour, window)
-
-        self.image = pygame.Surface([w,h])
-        self.image.fill(colour)
-        self.rect = self.image.get_rect()
-        self.rect.x = x
-        self.rect.y = y
-
-    def update(self):
-        if self.checkReachedRange() == True:
-            pygame.gfxdraw.circle(self.window, self.rect.x, self.rect.y, self.w*6, (255,0,0))
-            self.kill()
-        else:
-            self.updateX()
-            self.updateY()

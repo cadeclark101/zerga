@@ -54,19 +54,20 @@ class MainRun(object):
         self.building_menu_container_rect = pygame.Rect(1890, 0, 30, 150)
         self.troop_groups_menu_container_rect = pygame.Rect(0, 50, 540, 1870)
 
-        self.font = pygame.font.SysFont("verdana", 32)
+        self.resource_font = pygame.font.SysFont("verdana", 32)
         
         self.Main()
 
 
     # DRAW INFO OVERLAY
     def drawOverlay(self):
-        green_resource_text = self.font.render(str(self.player.green_resource), True, (0, 255, 0), None)
+        green_resource_text = self.resource_font.render(str(self.player.green_resource), True, (0, 255, 0), None)
+        blue_resource_text = self.resource_font.render(str(self.player.green_resource), True, (0, 0, 128), None)
 
-        blue_resource_text = self.font.render(str(self.player.green_resource), True, (0, 0, 128), None)
         
         self.window_object.blit(green_resource_text, (0,0)) 
         self.window_object.blit(blue_resource_text, (0,35)) 
+
 
 
     # CREATE RIGHT SIDE BUILD MENU
@@ -139,13 +140,13 @@ class MainRun(object):
             owner.addTroopToGroup(new_troop, new_troop.troop_type_id)
 
         if troop_type_id == 1: 
-            new_troop = BasicTroop(10, 10, self.player.selected_building.x, self.player.selected_building.y, 10, (0, 0, 0), 4, owner, None, 1)
+            new_troop = BasicTroop(10, 10, self.player.selected_building.x, self.player.selected_building.y, 10, (0, 0, 0), 4, owner, self.enemy, None, 100)
             addNewTroop(owner, new_troop)
         if troop_type_id == 2: 
-            new_troop = SniperTroop(5, 5, self.player.selected_building.x, self.player.selected_building.y, 5, (3, 200, 100), 2, owner, None, 2)
+            new_troop = SniperTroop(5, 5, self.player.selected_building.x, self.player.selected_building.y, 5, (3, 200, 100), 2, owner, self.enemy, None, 300)
             addNewTroop(owner, new_troop)
         if troop_type_id == 3: 
-            new_troop = MortarTroop(15, 15, self.player.selected_building.x, self.player.selected_building.y, 20, (20, 30, 60), 1, owner, None, 3)
+            new_troop = MortarTroop(15, 15, self.player.selected_building.x, self.player.selected_building.y, 20, (20, 30, 60), 1, owner, self.enemy, None, 500)
             addNewTroop(owner, new_troop)
 
         
@@ -153,9 +154,7 @@ class MainRun(object):
     # FIRE PROJECTILE FROM ALL SELECTED SPRITES
     def fireProj(self):
         for sprite in all_troop_sprites:
-            proj_target = pygame.mouse.get_pos()
-            print(proj_target)
-            new_proj = Projectile(sprite.rect.x, sprite.rect.y, 5, 5, proj_target, 4, 100, (0,0,0), self.window_object)
+            new_proj = Projectile(sprite.rect.x, sprite.rect.y, 5, 5, self.player.attack_target, 4, 100, (0,0,0), self.window_object)
             projectiles.add(new_proj)
 
 
@@ -339,6 +338,7 @@ class MainRun(object):
 
             # MOVE ALL PROJECTILES
             projectiles.update()
+
         
 
 
@@ -366,7 +366,6 @@ class MainRun(object):
                     all_sprites.add(new_building)
                     building_sprites.add(new_building)
 
-                # CLAIM RESOURCE NODE
                     
 
             # DATA GATHERING

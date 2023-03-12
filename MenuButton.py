@@ -16,6 +16,9 @@ class MenuButton(pygame.sprite.Sprite):
         self.rect.x = x
         self.rect.y = y
 
+    def getSurface(self):
+        return self.image
+
     def getButtonID(self):
         return self.id
     
