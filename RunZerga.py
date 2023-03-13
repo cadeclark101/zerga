@@ -140,22 +140,21 @@ class MainRun(object):
             owner.addTroopToGroup(new_troop, new_troop.troop_type_id)
 
         if troop_type_id == 1: 
-            new_troop = BasicTroop(10, 10, self.player.selected_building.x, self.player.selected_building.y, 10, (0, 0, 0), 4, owner, self.enemy, None, 100)
+            new_troop = BasicTroop(10, 10, self.player.selected_building.x, self.player.selected_building.y, 10, (0, 0, 0), 4, owner, self.enemy, None, 100, None)
             addNewTroop(owner, new_troop)
         if troop_type_id == 2: 
-            new_troop = SniperTroop(5, 5, self.player.selected_building.x, self.player.selected_building.y, 5, (3, 200, 100), 2, owner, self.enemy, None, 300)
+            new_troop = SniperTroop(5, 5, self.player.selected_building.x, self.player.selected_building.y, 5, (3, 200, 100), 2, owner, self.enemy, None, 300, None)
             addNewTroop(owner, new_troop)
         if troop_type_id == 3: 
-            new_troop = MortarTroop(15, 15, self.player.selected_building.x, self.player.selected_building.y, 20, (20, 30, 60), 1, owner, self.enemy, None, 500)
+            new_troop = MortarTroop(15, 15, self.player.selected_building.x, self.player.selected_building.y, 20, (20, 30, 60), 1, owner, self.enemy, None, 500, None)
             addNewTroop(owner, new_troop)
 
         
 
     # FIRE PROJECTILE FROM ALL SELECTED SPRITES
-    def fireProj(self):
-        for sprite in all_troop_sprites:
-            new_proj = Projectile(sprite.rect.x, sprite.rect.y, 5, 5, self.player.attack_target, 4, 100, (0,0,0), self.window_object)
-            projectiles.add(new_proj)
+    def fireProj(self, troop):
+        new_proj = Projectile(troop.rect.x, troop.rect.y, 5, 5, (troop.attack_target.rect.x, troop.attack_target.rect.y), 4, (0,0,0), self.window_object)
+        projectiles.add(new_proj)
 
 
     def handleClickEvent(self, mouse_pos, click):
@@ -257,13 +256,6 @@ class MainRun(object):
                 if self.player.selected_menu_button.getButtonID() == 4:
                     placeBuilding(self.player.selected_menu_button.getButtonID(), None, self.player)
 
-        # CHECK FOR MIDDLE MOUSE CLICK 
-        # CURRENTLY SET TO RIGHT CLICK BECAUSE IM ON MY LAPTOP
-        # TODO: CHANGE TO AUTO FIRING AT CLOSEST TARGET
-        if click == (False, False, True):
-            if self.player.selected_troop_group != None:
-                self.fireProj()
-
         # CLEAR CURSOR ON RIGHT CLICK             
         #if click == (False, False, True): 
          #   self.player.selected_menu_button = None
@@ -335,6 +327,13 @@ class MainRun(object):
             if len(self.moving_troops) != 0:
                 self.moving_troops.update(self.moving_troops, all_sprites)
                 self.moving_troops.draw(self.window_object)
+
+            # AUTO FIRE ALL TROOPS THAT HAVE A TARGET IN RANGE
+            for troop in all_troop_sprites:
+                if troop.attack_target is not None:
+                    self.fireProj(troop)
+                else:
+                    pass
 
             # MOVE ALL PROJECTILES
             projectiles.update()

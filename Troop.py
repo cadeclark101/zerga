@@ -17,7 +17,7 @@ class Troop(pygame.sprite.Sprite):
         self.speed = speed
         self.owner = owner
         self.enemy = enemy
-        self.movement_target = target
+        self.target = target
         self.range = range
         self.attack_target = attack_target
 
@@ -44,20 +44,20 @@ class Troop(pygame.sprite.Sprite):
 
 
     def updateX(self):
-        if self.movement_target[0] > self.rect.x:
+        if self.target[0] > self.rect.x:
             self.rect.x += self.speed
             self.range_rect.x += self.speed
-        elif self.movement_target[0] < self.rect.x:
+        elif self.target[0] < self.rect.x:
             self.rect.x -= self.speed
             self.range_rect.x -= self.speed
         else:
             pass
 
     def updateY(self):
-        if self.movement_target[1] > self.rect.y:
+        if self.target[1] > self.rect.y:
             self.rect.y += self.speed
             self.range_rect.y += self.speed
-        elif self.movement_target[1] < self.rect.y:
+        elif self.target[1] < self.rect.y:
             self.rect.y -= self.speed
             self.range_rect.y -= self.speed
         else:
@@ -65,7 +65,7 @@ class Troop(pygame.sprite.Sprite):
 
 
     def checkReachedTarget(self):
-        if self.movement_target[0] == self.rect.x and self.movement_target[1] == self.rect.y:
+        if self.target[0] == self.rect.x and self.target[1] == self.rect.y:
             return True
         else:
             return False
@@ -93,7 +93,7 @@ class Troop(pygame.sprite.Sprite):
         enemy_buildings = self.enemy.getOwnedBuildings()
         enemy_sprites_in_range = self.range_rect.collidelistall(list(enemy_buildings))
         if len(enemy_sprites_in_range) != 0:
-            self.attack_target = enemy_buildings[0] # select first sprite in range as target for projectiles
+            self.attack_target = list(enemy_buildings)[0] # select first sprite in range as target for projectiles
         else:
             pass  
 
@@ -157,16 +157,14 @@ class MortarTroop(Troop):
 
 
 class Projectile(pygame.sprite.Sprite):
-    def __init__(self, x, y, w, h, target, speed, range, colour, window):
+    def __init__(self, x, y, w, h, target, speed, colour, window):
         pygame.sprite.Sprite.__init__(self)
         self.w = w
         self.h = h
         self.startX = x
         self.startY = y
-        self.movement_target = target
+        self.target = target
         self.speed = speed
-        self.range = range
-        self.range_ticker = 0
         self.colour = colour
 
         self.image = pygame.Surface([w,h])
@@ -187,30 +185,24 @@ class Projectile(pygame.sprite.Sprite):
 
 
     def updateX(self):
-        if self.movement_target[0] > self.rect.x:
+        if self.target[0] > self.rect.x:
             self.rect.x += self.speed
-            self.range_ticker += self.speed
-        elif self.movement_target[0] < self.rect.x:
+        elif self.target[0] < self.rect.x:
             self.rect.x -= self.speed
-            self.range_ticker += self.speed
         else:
             pass
 
     def updateY(self):
-        if self.movement_target[1] > self.rect.y:
+        if self.target[1] > self.rect.y:
             self.rect.y += self.speed
-            self.range_ticker += self.speed
-        elif self.movement_target[1] < self.rect.y:
+        elif self.target[1] < self.rect.y:
             self.rect.y -= self.speed
-            self.range_ticker += self.speed
         else:
             pass
         
 
     def checkReachedRange(self):
-        if (self.rect.x == self.movement_target[0]) and (self.rect.y == self.movement_target[1]):
-            return True
-        if (self.range_ticker >= self.range):
+        if (self.rect.x == self.target[0]) and (self.rect.y == self.target[1]):
             return True
         return False
     
